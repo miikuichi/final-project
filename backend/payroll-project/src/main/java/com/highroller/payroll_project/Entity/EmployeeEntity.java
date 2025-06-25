@@ -41,7 +41,7 @@ public class EmployeeEntity {
     private String cellphone;
     private String dateHired;
     private String religion;
-    private String dependents; // JSON string: [{name,birthday},...]
+
     private String email;
     private String course;
     private String school;
@@ -50,7 +50,6 @@ public class EmployeeEntity {
     private String sss;
     private String pagibig;
     private String tin;
-    private String emergencyContact; // JSON string: {name,number}
     private String bloodtype;
     private String department;
     private String position;
@@ -162,14 +161,6 @@ public class EmployeeEntity {
         this.religion = religion;
     }
 
-    public String getDependents() {
-        return dependents;
-    }
-
-    public void setDependents(String dependents) {
-        this.dependents = dependents;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -232,14 +223,6 @@ public class EmployeeEntity {
 
     public void setTin(String tin) {
         this.tin = tin;
-    }
-
-    public String getEmergencyContact() {
-        return emergencyContact;
-    }
-
-    public void setEmergencyContact(String emergencyContact) {
-        this.emergencyContact = emergencyContact;
     }
 
     public String getBloodtype() {

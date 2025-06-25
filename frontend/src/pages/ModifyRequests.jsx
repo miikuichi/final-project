@@ -1,78 +1,221 @@
-import React, { useState, useEffect } from 'react';
-import { useRole } from '../components/RoleContext';
-import { AdminNavBar } from '../components/NavBar';
+import React, { useState, useEffect } from "react";
+import { useRole } from "../components/RoleContext";
+import { AdminNavBar } from "../components/NavBar";
+import "./ManageTickets.css"; // Use ticket styles for consistency
+
+function diffFields(original, updated) {
+  const diffs = [];
+  for (const key in updated) {
+    if (original[key] !== updated[key]) {
+      diffs.push({
+        field: key,
+        from: original[key],
+        to: updated[key],
+      });
+    }
+  }
+  return diffs;
+}
 
 export default function ModifyRequests() {
   const { role } = useRole();
   const [requests, setRequests] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [original, setOriginal] = useState(null);
 
   useEffect(() => {
-    const reqs = JSON.parse(localStorage.getItem('modifyRequests') || '[]');
+    const reqs = JSON.parse(localStorage.getItem("modifyRequests") || "[]");
     setRequests(reqs);
   }, []);
 
-  const handleApprove = req => {
-    // Approve: update employee in localStorage
-    const employees = JSON.parse(localStorage.getItem('employees') || '[]');
-    const idx = employees.findIndex(e => e.employeeId === req.employeeId);
+  const handleShowDetails = async (req) => {
+    // Simulate fetching the original employee data (replace with API if needed)
+    const employees = JSON.parse(localStorage.getItem("employees") || "[]");
+    const orig = employees.find((e) => e.employeeId === req.employeeId) || {};
+    setOriginal(orig);
+    setSelected(req);
+  };
+
+  const handleApprove = (req) => {
+    // Approve: update employee in localStorage (flat fields)
+    const employees = JSON.parse(localStorage.getItem("employees") || "[]");
+    const idx = employees.findIndex((e) => e.employeeId === req.employeeId);
     if (idx !== -1) {
-      employees[idx] = req.updated;
-      localStorage.setItem('employees', JSON.stringify(employees));
+      // Flat merge: just overwrite fields
+      employees[idx] = { ...employees[idx], ...req.updated };
+      localStorage.setItem("employees", JSON.stringify(employees));
     }
     // Remove request
-    const newReqs = requests.filter(r => r !== req);
-    localStorage.setItem('modifyRequests', JSON.stringify(newReqs));
+    const newReqs = requests.filter((r) => r !== req);
+    localStorage.setItem("modifyRequests", JSON.stringify(newReqs));
     setRequests(newReqs);
     setSelected(null);
-    alert('Modification approved and applied.');
+    setOriginal(null);
+    alert("Modification approved and applied.");
   };
 
-  const handleReject = req => {
+  const handleReject = (req) => {
     // Remove request
-    const newReqs = requests.filter(r => r !== req);
-    localStorage.setItem('modifyRequests', JSON.stringify(newReqs));
+    const newReqs = requests.filter((r) => r !== req);
+    localStorage.setItem("modifyRequests", JSON.stringify(newReqs));
     setRequests(newReqs);
     setSelected(null);
-    alert('Modification request rejected.');
+    setOriginal(null);
+    alert("Modification request rejected.");
   };
 
-  if (role !== 'admin') {
-    return <div style={{padding:'2rem'}}>Only admin can view modification requests.</div>;
+  if (role !== "admin") {
+    return (
+      <div style={{ padding: "2rem" }}>
+        Only admin can view modification requests.
+      </div>
+    );
   }
 
   return (
     <div>
-      <AdminNavBar onHome={() => window.location.assign('/admin')} onLogout={() => { localStorage.removeItem('userRole'); window.location.assign('/'); }} />
-      <div className="modify-requests-container">
+      <AdminNavBar
+        onHome={() => window.location.assign("/admin")}
+        onLogout={() => {
+          localStorage.removeItem("userRole");
+          window.location.assign("/");
+        }}
+      />
+      <div
+        className="manage-tickets-container"
+        style={{
+          background: "#fff",
+          borderRadius: "1.5rem",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
+          minWidth: "50vw",
+          minHeight: "80vh",
+          margin: "4.5rem auto 0 auto",
+          padding: "2.5rem 2rem",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
         <h2>Modification Requests</h2>
-        <div className="modify-requests-list">
-          {requests.length === 0 && <div className="no-requests">No modification requests.</div>}
+        <div className="ticket-list">
+          {requests.length === 0 && (
+            <div className="no-tickets">No modification requests.</div>
+          )}
           {requests.map((req, i) => (
-            <div className="modify-request-card" key={i} onClick={() => setSelected(req)}>
-              <div><b>Employee ID:</b> {req.employeeId}</div>
-              <div><b>Reason:</b> {req.reason}</div>
-              <div><b>Requested By:</b> {req.requestedBy}</div>
-              <div><b>Date:</b> {new Date(req.date).toLocaleString()}</div>
+            <div className="ticket-bar" key={i}>
+              <span className="ticket-name">{req.employeeId}</span>
+              <span className="ticket-category">{req.reason}</span>
+              <span className="ticket-details">
+                Requested by: {req.requestedBy}
+              </span>
+              <button
+                style={{ marginLeft: "1rem" }}
+                onClick={() => handleShowDetails(req)}
+              >
+                Show Details
+              </button>
             </div>
           ))}
         </div>
         {selected && (
           <div className="modal-overlay">
-            <div className="modal employee-modal">
-              <button className="close-btn" onClick={() => setSelected(null)}>&times;</button>
-              <h3>Review Modification</h3>
-              <div className="employee-details">
-                <div><b>Employee ID:</b> {selected.employeeId}</div>
-                <div><b>Reason:</b> {selected.reason}</div>
-                <div><b>Requested By:</b> {selected.requestedBy}</div>
-                <div><b>Date:</b> {new Date(selected.date).toLocaleString()}</div>
-                <div style={{marginTop:'1rem'}}><b>New Data:</b></div>
-                <pre style={{background:'#f3f4f6',padding:'0.7rem',borderRadius:'0.7rem',fontSize:'0.98rem'}}>{JSON.stringify(selected.updated, null, 2)}</pre>
+            <div className="modal ticket-modal">
+              <button
+                className="close-btn"
+                onClick={() => {
+                  setSelected(null);
+                  setOriginal(null);
+                }}
+              >
+                &times;
+              </button>
+              <h3>Request Details</h3>
+              <div>
+                <b>Employee ID:</b> {selected.employeeId}
               </div>
-              <div style={{display:'flex',gap:'1rem',marginTop:'1.2rem'}}>
-                <button className="add-btn" onClick={() => handleApprove(selected)}>Approve</button>
-                <button className="clear-btn" onClick={() => handleReject(selected)}>Reject</button>
+              <div>
+                <b>Reason:</b> {selected.reason}
+              </div>
+              <div>
+                <b>Requested By:</b> {selected.requestedBy}
+              </div>
+              <div>
+                <b>Date:</b> {new Date(selected.date).toLocaleString()}
+              </div>
+              <div style={{ marginTop: "1rem" }}>
+                <b>Changes:</b>
+              </div>
+              {original && diffFields(original, selected.updated).length > 0 ? (
+                <ul style={{ margin: "0.5rem 0 1rem 1rem" }}>
+                  {diffFields(original, selected.updated).map((diff, idx) => (
+                    <li key={idx}>
+                      <b>{diff.field}:</b>{" "}
+                      <span style={{ color: "#f59e42" }}>
+                        {String(diff.from)}
+                      </span>{" "}
+                      →{" "}
+                      <span style={{ color: "#10b981" }}>
+                        {String(diff.to)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div style={{ margin: "0.5rem 0 1rem 1rem" }}>
+                  No changes detected.
+                </div>
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "1rem",
+                  justifyContent: "flex-end",
+                  maxWidth: "370px",
+                  alignItems: "center",
+                }}
+              >
+                <button
+                  className="issue-fixed-btn"
+                  style={{ minWidth: "110px", height: "2.7rem" }}
+                  onClick={() => handleApprove(selected)}
+                >
+                  Confirm
+                </button>
+                <button
+                  className="clear-btn"
+                  style={{
+                    background: "#e11d48",
+                    color: "#fff",
+                    minWidth: "110px",
+                    height: "2.7rem",
+                    marginTop: "21px",
+                  }}
+                  onClick={() => handleReject(selected)}
+                >
+                  Reject
+                </button>
+                <button
+                  className="close-btn"
+                  style={{
+                    position: "static",
+                    fontSize: "1rem",
+                    color: "#374151",
+                    minWidth: "110px",
+                    height: "2.7rem",
+                    borderRadius: "1rem",
+                    background: "#f3f4f6",
+                    border: "none",
+                    cursor: "pointer",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+                    marginTop: "21px",
+                  }}
+                  onClick={() => {
+                    setSelected(null);
+                    setOriginal(null);
+                  }}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>

@@ -72,4 +72,19 @@ public class EmployeeController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    // Delete employee by first and last name
+    @DeleteMapping("/deleteByName")
+    public ResponseEntity<Void> deleteEmployeeByName(@RequestParam String firstName, @RequestParam String lastName) {
+        List<EmployeeEntity> matches = employeeRepository.findAll().stream()
+            .filter(e -> e.getFirstName().equalsIgnoreCase(firstName) && e.getLastName().equalsIgnoreCase(lastName))
+            .toList();
+        if (matches.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        for (EmployeeEntity emp : matches) {
+            employeeRepository.deleteById(emp.getEmpId());
+        }
+        return ResponseEntity.ok().build();
+    }
 }

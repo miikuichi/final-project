@@ -1,7 +1,7 @@
 .add-employee-container {
   background: #fff;
   border-radius: 1.5rem;
-  max-width: 600px;
+  max-width: '80vw';
   padding: 2.5rem 2rem;
   display: flex;
   flex-direction: column;
