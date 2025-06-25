@@ -1,0 +1,79 @@
+.search-bar-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.search-bar {
+  width: 40%;
+  max-width: 200px;
+  padding: 0.7rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.employee-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: stretch;
+}
+
+.employee-card {
+  background: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  padding: 1.2rem;
+  max-width: 70%;
+  min-width: 0;
+}
+
+.employee-card-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.employee-card-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.card-img-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-img-placeholder {
+  font-size: 2rem;
+  color: #aaa;
+}
+
+.employee-card-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-name {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.employee-id {
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.no-employees {
+  color: #888;
+  font-size: 1.1rem;
+  margin: 2rem auto;
+}
