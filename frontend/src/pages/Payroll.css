@@ -177,6 +177,21 @@
   font-size: 1.1rem;
   margin-top: 2rem;
 }
+.payroll-close-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.2s;
+}
+.payroll-close-btn:hover {
+  color: #d32f2f;
+}
 @media (max-width: 900px) {
   .payroll-container {
     flex-direction: column;

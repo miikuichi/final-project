@@ -15,7 +15,7 @@ const initialState = {
   cellphone: "",
   dateHired: "",
   religion: "",
-  email: "",
+  email: { user: "", domain: "@gmail.com" }, // changed from string to object
   course: "",
   school: "",
   licenses: "",
@@ -76,6 +76,14 @@ export default function AddEmployee() {
           currentAddress: { ...f.permanentAddress, [name]: value },
         }));
       }
+    } else if (name === "emailUser" || name === "emailDomain") {
+      setForm((f) => ({
+        ...f,
+        email: {
+          ...f.email,
+          [name === "emailUser" ? "user" : "domain"]: value,
+        },
+      }));
     } else {
       setForm((f) => ({ ...f, [name]: value }));
     }
@@ -106,7 +114,8 @@ export default function AddEmployee() {
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      await addEmployee(form);
+      const employeeToSend = { ...form, email: form.email.user + form.email.domain };
+      await addEmployee(employeeToSend);
       setForm(initialState);
       setShowConfirmModal(false);
       alert("Employee added successfully!");

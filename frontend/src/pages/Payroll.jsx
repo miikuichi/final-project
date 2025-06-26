@@ -29,11 +29,19 @@ export default function Payroll() {
   const [employees, setEmployees] = useState([]);
   const [selected, setSelected] = useState(null);
   const [workHours, setWorkHours] = useState({});
-  const [periodDays, setPeriodDays] = useState(15);
-  const [basicRate, setBasicRate] = useState(610); // Example: 610 PHP/day (minimum wage NCR 2024)
+  const [periodDays, setPeriodDays] = useState(20); // default 20 working days/month
+  const [monthlyRate, setMonthlyRate] = useState(20000); // Example: 20,000 PHP/month
+
+  // Calculate rates
+  const ratePerDay = monthlyRate / periodDays;
+  const ratePerHour = ratePerDay / 8;
 
   useEffect(() => {
-    setEmployees(getEmployees());
+    // getEmployees is async, so use async/await
+    (async () => {
+      const emps = await getEmployees();
+      setEmployees(emps);
+    })();
   }, []);
 
   const handleSelect = emp => {
@@ -52,11 +60,11 @@ export default function Payroll() {
     const specialRate = 1.3;
     const regularRate = 2.0;
     return (
-      normal * basicRate +
-      overtime * basicRate * otRate +
-      restday * basicRate * restdayRate +
-      special * basicRate * specialRate +
-      regular * basicRate * regularRate
+      normal * ratePerHour +
+      overtime * ratePerHour * otRate +
+      restday * ratePerHour * restdayRate +
+      special * ratePerHour * specialRate +
+      regular * ratePerHour * regularRate
     );
   };
 
@@ -89,7 +97,15 @@ export default function Payroll() {
         <div className="payroll-right">
           {selected ? (
             <>
-              <div className="payroll-emp-header">
+              <div className="payroll-emp-header" style={{ position: 'relative' }}>
+                <button
+                  className="payroll-close-btn"
+                  style={{ position: 'absolute', top: 0, right: 0, background: 'transparent', border: 'none', fontSize: '1.8rem', cursor: 'pointer', color: '#888', zIndex: 2 }}
+                  onClick={() => setSelected(null)}
+                  aria-label="Close"
+                >
+                  &times;
+                </button>
                 <div className="payroll-emp-img-large">
                   {selected.image ? (
                     <img src={typeof selected.image === 'string' ? selected.image : URL.createObjectURL(selected.image)} alt="Employee" />
@@ -110,8 +126,10 @@ export default function Payroll() {
               <div className="payroll-salary-box">
                 <h4>Salary Computation</h4>
                 <div className="payroll-salary-form">
-                  <label>Salary Period (days): <input type="number" min={1} max={15} value={periodDays} onChange={e => setPeriodDays(e.target.value)} /></label>
-                  <label>Basic Daily Rate (PHP): <input type="number" min={1} value={basicRate} onChange={e => setBasicRate(e.target.value)} /></label>
+                  <label>Salary Period (days): <input type="number" min={1} max={31} value={periodDays} onChange={e => setPeriodDays(Number(e.target.value))} /></label>
+                  <label>Monthly Rate (PHP): <input type="number" min={1} value={monthlyRate} onChange={e => setMonthlyRate(Number(e.target.value))} /></label>
+                  <div>Rate/Day: ₱{ratePerDay.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
+                  <div>Rate/Hour: ₱{ratePerHour.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
                   {DEFAULT_WORK_CATEGORIES.map(cat => (
                     <label key={cat.key}>{cat.label} Hours: <input type="number" min={0} value={workHours[cat.key] || ''} onChange={e => setWorkHours(w => ({ ...w, [cat.key]: e.target.value }))} /></label>
                   ))}
@@ -120,7 +138,7 @@ export default function Payroll() {
                   </div>
                 </div>
                 <div className="payroll-salary-note">
-                  <b>Formula:</b> (Normal x Rate) + (OT x Rate x 1.25) + (Rest Day x Rate x 1.3) + (Special Holiday x Rate x 1.3) + (Regular Holiday x Rate x 2.0)
+                  <b>Formula:</b> (Normal x Rate/Hour) + (OT x Rate/Hour x 1.25) + (Rest Day x Rate/Hour x 1.3) + (Special Holiday x Rate/Hour x 1.3) + (Regular Holiday x Rate/Hour x 2.0)
                 </div>
               </div>
             </>
