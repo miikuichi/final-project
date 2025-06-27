@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRole } from "../components/RoleContext";
 import { AdminNavBar, HRNavBar } from "../components/NavBar";
 import { addEmployee } from "../components/employeeStorage";
+import Button from "../components/Button";
 import "./AddEmployee.css";
 
 const initialState = {
@@ -44,6 +45,8 @@ const initialState = {
 };
 
 export default function AddEmployee() {
+  const [departments, setDepartments] = useState([]);
+  const [positions, setPositions] = useState([]);
   const [form, setForm] = useState(initialState);
   const [showClearModal, setShowClearModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -51,6 +54,28 @@ export default function AddEmployee() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { role } = useRole();
+
+  useEffect(() => {
+    // Fetch departments on component mount
+    fetch("http://localhost:8080/api/departments")
+      .then((res) => res.json())
+      .then(setDepartments)
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    // Fetch positions when department changes
+    if (form.department) {
+      fetch(
+        `http://localhost:8080/api/departments/${form.department}/positions`
+      )
+        .then((res) => res.json())
+        .then(setPositions)
+        .catch(console.error);
+    } else {
+      setPositions([]);
+    }
+  }, [form.department]);
 
   const handleChange = (e) => {
     const { name, value, type, checked, dataset } = e.target;
@@ -114,7 +139,10 @@ export default function AddEmployee() {
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      const employeeToSend = { ...form, email: form.email.user + form.email.domain };
+      const employeeToSend = {
+        ...form,
+        email: form.email.user + form.email.domain,
+      };
       await addEmployee(employeeToSend);
       setForm(initialState);
       setShowConfirmModal(false);
@@ -126,6 +154,12 @@ export default function AddEmployee() {
       setLoading(false);
     }
   };
+
+  // Filter unique department names
+  const uniqueDepartments = departments.filter(
+    (dept, idx, arr) =>
+      arr.findIndex((d) => d.deptName === dept.deptName) === idx
+  );
 
   return (
     <div>
@@ -313,6 +347,7 @@ export default function AddEmployee() {
               value={form.permanentAddress.zip}
               onChange={handleChange}
               required
+              type="number"
               style={{ width: "6rem" }}
             />
           </div>
@@ -394,6 +429,7 @@ export default function AddEmployee() {
               onChange={handleChange}
               required
               disabled={form.sameAsPermanent}
+              type="number"
               style={{ width: "6rem" }}
             />
           </div>
@@ -413,8 +449,9 @@ export default function AddEmployee() {
             <label htmlFor="cellphone">Cellphone:</label>
             <input
               id="cellphone"
-              name="cellphone"
               className="ae-textbox"
+              name="cellphone"
+              type="number"
               value={form.cellphone}
               onChange={handleChange}
               required
@@ -450,23 +487,40 @@ export default function AddEmployee() {
           </div>
           <div className="form-row">
             <label htmlFor="department">Department:</label>
-            <input
+            <select
               id="department"
-              name="department"
               className="ae-textbox"
+              name="department"
               value={form.department}
               onChange={handleChange}
               required
-            />
-            <label htmlFor="position">Position Title:</label>
-            <input
+            >
+              <option value="">Select Department</option>
+              {uniqueDepartments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.deptName}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="form-row">
+            <label htmlFor="position">Position:</label>
+            <select
               id="position"
-              name="position"
               className="ae-textbox"
+              name="position"
               value={form.position}
               onChange={handleChange}
               required
-            />
+              disabled={!form.department}
+            >
+              <option value="">Select Position</option>
+              {positions.map((pos) => (
+                <option key={pos.id} value={pos.id}>
+                  {pos.positionName || pos.pos_title}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="form-row">
             <label htmlFor="course">Course:</label>
@@ -500,36 +554,44 @@ export default function AddEmployee() {
             <label htmlFor="philhealth">PhilHealth:</label>
             <input
               id="philhealth"
-              name="philhealth"
               className="ae-textbox"
+              name="philhealth"
+              type="number"
               value={form.philhealth}
               onChange={handleChange}
+              required
             />
             <label htmlFor="sss">SSS:</label>
             <input
               id="sss"
-              name="sss"
               className="ae-textbox"
+              name="sss"
+              type="number"
               value={form.sss}
               onChange={handleChange}
+              required
             />
           </div>
           <div className="form-row">
             <label htmlFor="pagibig">Pag-IBIG:</label>
             <input
               id="pagibig"
-              name="pagibig"
               className="ae-textbox"
+              name="pagibig"
+              type="number"
               value={form.pagibig}
               onChange={handleChange}
+              required
             />
             <label htmlFor="tin">TIN:</label>
             <input
               id="tin"
-              name="tin"
               className="ae-textbox"
+              name="tin"
+              type="number"
               value={form.tin}
               onChange={handleChange}
+              required
             />
           </div>
           <div className="form-row">
@@ -563,16 +625,18 @@ export default function AddEmployee() {
             {emailError && <span className="error-message">{emailError}</span>}
           </div>
           <div className="form-actions">
-            <button
+            <Button
               type="button"
               className="clear-btn"
+              label="Clear"
               onClick={() => setShowClearModal(true)}
-            >
-              Clear
-            </button>
-            <button type="submit" className="add-btn" disabled={loading}>
-              Add Employee
-            </button>
+            />
+            <Button
+              type="submit"
+              className="add-btn"
+              label="Add Employee"
+              disabled={loading}
+            />
           </div>
         </form>
         {showClearModal && (
@@ -583,8 +647,8 @@ export default function AddEmployee() {
                 Clearing this form will remove all input data. Are you sure?
               </p>
               <div className="modal-actions">
-                <button onClick={handleClear}>Yes</button>
-                <button onClick={() => setShowClearModal(false)}>No</button>
+                <Button label="Yes" onClick={handleClear} />
+                <Button label="No" onClick={() => setShowClearModal(false)} />
               </div>
             </div>
           </div>
@@ -592,12 +656,11 @@ export default function AddEmployee() {
         {showConfirmModal && (
           <div className="modal-overlay">
             <div className="modal">
-              <button
+              <Button
                 className="close-btn"
+                label="×"
                 onClick={() => setShowConfirmModal(false)}
-              >
-                &times;
-              </button>
+              />
               <h3>Confirm Employee Details</h3>
               <div className="confirm-details">
                 {form.image && (
@@ -670,14 +733,13 @@ export default function AddEmployee() {
                     .join(", ")}
                 </div>
               </div>
-              <button
+              <Button
                 className="confirm-btn"
+                label="Confirm"
                 onClick={handleConfirm}
                 style={{ float: "right" }}
                 disabled={loading}
-              >
-                Confirm
-              </button>
+              />
             </div>
           </div>
         )}

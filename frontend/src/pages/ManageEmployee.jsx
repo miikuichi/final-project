@@ -7,6 +7,7 @@ import {
   addModifyRequest,
   deleteModifyRequest,
 } from "../components/modifyRequestStorage";
+import Button from "../components/Button";
 import "./ManageEmployee.css";
 
 export default function ManageEmployee() {
@@ -143,22 +144,20 @@ export default function ManageEmployee() {
               <div
                 style={{ display: "flex", gap: "0.7rem", marginTop: "0.7rem" }}
               >
-                <button
+                <Button
                   className="show-details-btn"
+                  label="Show full details"
                   onClick={() => setSelected(emp)}
-                >
-                  Show full details
-                </button>
-                <button
+                />
+                <Button
                   className="add-btn"
                   style={{ background: "#e53e3e" }}
+                  label="Remove Employee"
                   onClick={async () => {
                     setShowRemoveIdx(idx);
                   }}
                   disabled={loading}
-                >
-                  Remove Employee
-                </button>
+                />
               </div>
               {showRemoveIdx === idx && (
                 <div className="modal-overlay">
@@ -166,8 +165,9 @@ export default function ManageEmployee() {
                     <h3>Remove Employee</h3>
                     <p>Are you sure you want to remove this employee?</p>
                     <div className="modal-actions">
-                      <button
+                      <Button
                         className="add-btn"
+                        label="Yes"
                         onClick={async () => {
                           setLoading(true);
                           try {
@@ -176,7 +176,11 @@ export default function ManageEmployee() {
                                 "No firstName or lastName found for this employee."
                               );
                             await import("../components/employeeStorage").then(
-                              (m) => m.removeEmployeeByName(emp.firstName, emp.lastName)
+                              (m) =>
+                                m.removeEmployeeByName(
+                                  emp.firstName,
+                                  emp.lastName
+                                )
                             );
                             setShowRemoveIdx(null);
                             refreshEmployees();
@@ -188,16 +192,12 @@ export default function ManageEmployee() {
                           }
                         }}
                         disabled={loading}
-                      >
-                        Yes
-                      </button>
-                      <button
+                      />
+                      <Button
                         className="clear-btn"
+                        label="No"
                         onClick={() => setShowRemoveIdx(null)}
-                        disabled={loading}
-                      >
-                        No
-                      </button>
+                      />
                     </div>
                   </div>
                 </div>
@@ -295,8 +295,9 @@ export default function ManageEmployee() {
                       .join(", ")}
                 </div>
               </div>
-              <button
+              <Button
                 className="modify-btn"
+                label="Modify"
                 onClick={() => {
                   setEditEmp({
                     ...selected,
@@ -304,9 +305,7 @@ export default function ManageEmployee() {
                   });
                   setSelected(null);
                 }}
-              >
-                Modify
-              </button>
+              />
             </div>
           </div>
         )}
@@ -837,9 +836,11 @@ export default function ManageEmployee() {
                       }
                     />
                   </div>
-                  <button className="add-btn" type="submit">
-                    Confirm changes
-                  </button>
+                  <Button
+                    className="add-btn"
+                    type="submit"
+                    label="Confirm changes"
+                  />
                 </form>
               </div>
             </div>

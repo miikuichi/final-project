@@ -13,6 +13,7 @@ import ModifyRequests from './pages/ModifyRequests';
 import { TicketProvider } from './components/TicketContext';
 import { RoleProvider } from './components/RoleContext';
 import AddEmployee from './pages/AddEmployee';
+import SignUp from './pages/SignUp';
 
 function App() {
 
@@ -31,6 +32,7 @@ function App() {
             <Route path="/manage-tickets" element={<ManageTickets />} />
             <Route path="/modify-requests" element={<ModifyRequests />} />
             <Route path="/add-employee" element={<AddEmployee />} />
+            <Route path="/signup" element={<SignUp />} />
           </Routes>
         </Router>
       </TicketProvider>

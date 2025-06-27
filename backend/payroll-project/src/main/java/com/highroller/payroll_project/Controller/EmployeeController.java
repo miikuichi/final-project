@@ -77,8 +77,8 @@ public class EmployeeController {
     @DeleteMapping("/deleteByName")
     public ResponseEntity<Void> deleteEmployeeByName(@RequestParam String firstName, @RequestParam String lastName) {
         List<EmployeeEntity> matches = employeeRepository.findAll().stream()
-            .filter(e -> e.getFirstName().equalsIgnoreCase(firstName) && e.getLastName().equalsIgnoreCase(lastName))
-            .toList();
+                .filter(e -> e.getFirstName().equalsIgnoreCase(firstName) && e.getLastName().equalsIgnoreCase(lastName))
+                .toList();
         if (matches.isEmpty()) {
             return ResponseEntity.notFound().build();
         }

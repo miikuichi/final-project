@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRole } from "../components/RoleContext";
 import { AdminNavBar } from "../components/NavBar";
+import Button from "../components/Button";
 import "./ManageTickets.css"; // Use ticket styles for consistency
 
 function diffFields(original, updated) {
@@ -108,27 +109,25 @@ export default function ModifyRequests() {
               <span className="ticket-details">
                 Requested by: {req.requestedBy}
               </span>
-              <button
+              <Button
                 style={{ marginLeft: "1rem" }}
+                label="Show Details"
                 onClick={() => handleShowDetails(req)}
-              >
-                Show Details
-              </button>
+              />
             </div>
           ))}
         </div>
         {selected && (
           <div className="modal-overlay">
             <div className="modal ticket-modal">
-              <button
+              <Button
                 className="close-btn"
+                label="×"
                 onClick={() => {
                   setSelected(null);
                   setOriginal(null);
                 }}
-              >
-                &times;
-              </button>
+              />
               <h3>Request Details</h3>
               <div>
                 <b>Employee ID:</b> {selected.employeeId}
@@ -174,14 +173,13 @@ export default function ModifyRequests() {
                   alignItems: "center",
                 }}
               >
-                <button
+                <Button
                   className="issue-fixed-btn"
                   style={{ minWidth: "110px", height: "2.7rem" }}
+                  label="Confirm"
                   onClick={() => handleApprove(selected)}
-                >
-                  Confirm
-                </button>
-                <button
+                />
+                <Button
                   className="clear-btn"
                   style={{
                     background: "#e11d48",
@@ -190,32 +188,18 @@ export default function ModifyRequests() {
                     height: "2.7rem",
                     marginTop: "21px",
                   }}
+                  label="Reject"
                   onClick={() => handleReject(selected)}
-                >
-                  Reject
-                </button>
-                <button
+                />
+                <Button
                   className="close-btn"
-                  style={{
-                    position: "static",
-                    fontSize: "1rem",
-                    color: "#374151",
-                    minWidth: "110px",
-                    height: "2.7rem",
-                    borderRadius: "1rem",
-                    background: "#f3f4f6",
-                    border: "none",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
-                    marginTop: "21px",
-                  }}
+                  style={{ position: "static" }}
+                  label="Close"
                   onClick={() => {
                     setSelected(null);
                     setOriginal(null);
                   }}
-                >
-                  Cancel
-                </button>
+                />
               </div>
             </div>
           </div>
