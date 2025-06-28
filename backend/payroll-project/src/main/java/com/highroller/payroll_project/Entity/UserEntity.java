@@ -7,11 +7,17 @@ import jakarta.persistence.*;
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
+    @Column(name = "username", unique = true)
     private String username;
+
+    @Column(name = "password")
     private String password;
-    private int role; // 0 = admin, 1 = HR
+
+    @Column(name = "role")
+    private int role;
 
     public UserEntity() {
     }

@@ -7,11 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/tickets")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173", allowedHeaders = "*", methods = {
+        RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS
+})
 public class TicketController {
     @Autowired
     private TicketRepository ticketRepository;
@@ -28,8 +31,13 @@ public class TicketController {
     }
 
     @PostMapping
-    public TicketEntity createTicket(@RequestBody TicketEntity ticket) {
-        return ticketRepository.save(ticket);
+    public ResponseEntity<TicketEntity> createTicket(@RequestBody TicketEntity ticket) {
+        try {
+            TicketEntity savedTicket = ticketRepository.save(ticket);
+            return ResponseEntity.ok(savedTicket);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -43,13 +51,16 @@ public class TicketController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<TicketEntity> updateTicketStatus(@PathVariable Long id, @RequestBody String status) {
+    public ResponseEntity<TicketEntity> updateTicketStatus(@PathVariable Long id,
+            @RequestBody Map<String, String> request) {
         Optional<TicketEntity> ticketOpt = ticketRepository.findById(id);
         if (ticketOpt.isPresent()) {
             TicketEntity ticket = ticketOpt.get();
-            ticket.setStatus(status.replaceAll("\"", "")); // Remove quotes if sent as JSON string
-            ticketRepository.save(ticket);
-            return ResponseEntity.ok(ticket);
+            String newStatus = request.get("status");
+            if (newStatus != null) {
+                ticket.setStatus(newStatus);
+                return ResponseEntity.ok(ticketRepository.save(ticket));
+            }
         }
         return ResponseEntity.notFound().build();
     }

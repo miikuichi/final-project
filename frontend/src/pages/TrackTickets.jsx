@@ -1,48 +1,34 @@
 import React, { useState, useEffect } from "react";
-import { AdminNavBar, HRNavBar } from "../components/NavBar";
-import { useTickets } from "../components/TicketContext";
-import { useRole } from "../components/RoleContext";
+import { HRNavBar } from "../components/NavBar";
 import TicketCard from "../components/TicketCard";
 import TicketModal from "../components/TicketModal";
-import "./ManageTickets.css";
+import "./TrackTickets.css";
 
-export default function ManageTickets() {
-  const { tickets, removeTicket, fetchTickets, updateTicketStatus } =
-    useTickets();
+export default function TrackTickets() {
+  const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const { role } = useRole();
 
   useEffect(() => {
-    const loadTickets = async () => {
+    const fetchTickets = async () => {
       try {
-        await fetchTickets();
+        const response = await fetch("http://localhost:8080/api/tickets");
+        if (!response.ok) {
+          throw new Error("Failed to fetch tickets");
+        }
+        const data = await response.json();
+        setTickets(data);
       } catch (err) {
         setError("Failed to load tickets. Please try refreshing the page.");
       } finally {
         setIsLoading(false);
       }
     };
-    loadTickets();
-  }, [fetchTickets]);
 
-  const handleRemoveTicket = async (id) => {
-    const success = await removeTicket(id);
-    if (!success) {
-      setError("Failed to delete ticket. Please try again.");
-    }
-    return success;
-  };
-
-  const handleUpdateStatus = async (id, status) => {
-    const success = await updateTicketStatus(id, status);
-    if (!success) {
-      setError("Failed to update ticket status. Please try again.");
-    }
-    return success;
-  };
+    fetchTickets();
+  }, []);
 
   const handleCardClick = (ticket) => {
     setSelectedTicket(ticket);
@@ -69,20 +55,13 @@ export default function ManageTickets() {
 
   return (
     <div>
-      {role === "admin" ? (
-        <AdminNavBar
-          onHome={() => window.location.assign("/admin")}
-          onLogout={handleLogout}
-        />
-      ) : (
-        <HRNavBar
-          onHome={() => window.location.assign("/hr")}
-          onIssueTicket={() => window.location.assign("/issue-ticket")}
-          onLogout={handleLogout}
-        />
-      )}
+      <HRNavBar
+        onHome={() => window.location.assign("/hr")}
+        onIssueTicket={() => window.location.assign("/issue-ticket")}
+        onLogout={handleLogout}
+      />
       <div
-        className="manage-tickets-container"
+        className="track-tickets-container"
         style={{
           background: "#fff",
           borderRadius: "1.5rem",
@@ -96,7 +75,7 @@ export default function ManageTickets() {
           alignItems: "center",
         }}
       >
-        <h2>Manage Tickets</h2>
+        <h2>Track My Tickets</h2>
         {error && (
           <div
             style={{
@@ -126,11 +105,25 @@ export default function ManageTickets() {
         )}
         {isLoading ? (
           <div style={{ textAlign: "center", padding: "2rem" }}>
-            Loading tickets...
+            Loading your tickets...
           </div>
         ) : tickets.length === 0 ? (
           <div style={{ textAlign: "center", padding: "2rem" }}>
-            No tickets found.
+            <p>You haven't submitted any tickets yet.</p>
+            <button
+              onClick={() => window.location.assign("/issue-ticket")}
+              style={{
+                backgroundColor: "#4f8cff",
+                color: "white",
+                padding: "0.75rem 1.5rem",
+                borderRadius: "0.5rem",
+                border: "none",
+                cursor: "pointer",
+                marginTop: "1rem",
+              }}
+            >
+              Create Your First Ticket
+            </button>
           </div>
         ) : (
           <div style={{ width: "100%", marginTop: "1rem" }}>
@@ -149,9 +142,7 @@ export default function ManageTickets() {
         ticket={selectedTicket}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onDelete={handleRemoveTicket}
-        onUpdateStatus={handleUpdateStatus}
-        role={role}
+        role="hr"
       />
     </div>
   );

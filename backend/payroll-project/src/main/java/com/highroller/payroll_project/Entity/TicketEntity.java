@@ -7,12 +7,20 @@ import jakarta.persistence.*;
 public class TicketEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "category", nullable = false)
     private String category;
+
+    @Column(name = "details", columnDefinition = "TEXT")
     private String details;
-    private String status = "under process"; // new field, default to 'under process'
+
+    @Column(name = "status", columnDefinition = "varchar(255) default 'under process'")
+    private String status = "under process";
 
     // Constructors
     public TicketEntity() {
