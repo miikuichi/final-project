@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { HRNavBar } from "../components/NavBar";
 import { useTickets } from "../components/TicketContext";
 import "./IssueTicket.css";
+import "./AddEmployee.css";
 
 const categories = ["Log In error", "Forgot Password", "Application Error"];
 
@@ -16,6 +17,7 @@ export default function IssueTicket() {
   const [countdown, setCountdown] = useState(3);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     // Fetch username from session
@@ -26,8 +28,12 @@ export default function IssueTicket() {
       .then((data) => {
         if (data && data.username) {
           setName(data.username);
+          setIsLoggedIn(true);
+        } else {
+          setIsLoggedIn(false);
         }
-      });
+      })
+      .catch(() => setIsLoggedIn(false));
   }, []);
 
   const handleSubmit = async (e) => {
@@ -47,12 +53,26 @@ export default function IssueTicket() {
         setShowModal(true);
         let timer = 3;
         setCountdown(timer);
-        const interval = setInterval(() => {
+        const interval = setInterval(async () => {
           timer -= 1;
           setCountdown(timer);
           if (timer === 0) {
             clearInterval(interval);
-            navigate("/hr"); // redirect to HR dashboard
+            // Check session before redirecting
+            try {
+              const res = await fetch(
+                "http://localhost:8080/api/users/session",
+                { credentials: "include" }
+              );
+              const data = await res.json();
+              if (data && data.username) {
+                navigate("/hr");
+              } else {
+                navigate("/");
+              }
+            } catch {
+              navigate("/");
+            }
           }
         }, 1000);
       } else {
@@ -67,119 +87,99 @@ export default function IssueTicket() {
 
   return (
     <div>
-      <HRNavBar
-        onHome={() => navigate("/hr")}
-        onIssueTicket={() => window.location.reload()}
-        onLogout={() => navigate("/")}
-      />
-      <div
-        className="issue-ticket-container"
-        style={{
-          background: "#fff",
-          borderRadius: "1.5rem",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-          maxWidth: 400,
-          margin: "4.5rem auto 0 auto",
-          padding: "2.5rem 2rem",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
+      <HRNavBar />
+      <div className="add-employee-container" style={{ maxWidth: "600px" }}>
         <h2>Issue Ticket</h2>
-        {error && (
-          <div
-            style={{
-              color: "#e11d48",
-              backgroundColor: "#ffe4e6",
-              padding: "0.75rem",
-              borderRadius: "0.5rem",
-              marginBottom: "1rem",
-              width: "100%",
-              textAlign: "center",
-            }}
-          >
-            {error}
+        
+        <form onSubmit={handleSubmit} className="employee-form">
+          <div className="form-section">
+            <h3>Ticket Information</h3>
+            
+            <div className="form-group">
+              <label>Name *</label>
+              <input
+                type="text"
+                name="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isLoggedIn}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Category *</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Details *</label>
+              <textarea
+                value={details}
+                onChange={(e) => setDetails(e.target.value)}
+                placeholder="Please describe your issue in detail..."
+                required
+                style={{
+                  width: "100%",
+                  padding: "0.875rem 1rem",
+                  border: "2px solid #e2e8f0",
+                  borderRadius: "0.75rem",
+                  fontSize: "1rem",
+                  minHeight: "120px",
+                  resize: "vertical",
+                  fontFamily: "inherit"
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = "#667eea";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(102, 126, 234, 0.1)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "#e2e8f0";
+                  e.target.style.boxShadow = "none";
+                }}
+              />
+            </div>
+
+            {error && (
+              <div style={{
+                color: "#ef4444",
+                backgroundColor: "#fef2f2",
+                padding: "0.75rem",
+                borderRadius: "0.5rem",
+                border: "1px solid #fecaca",
+                marginBottom: "1rem"
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div className="form-actions">
+              <button 
+                type="button"
+                className="btn-cancel"
+                onClick={() => isLoggedIn ? navigate("/hr") : navigate("/")}
+              >
+                {isLoggedIn ? "Home" : "Cancel"}
+              </button>
+              <button
+                type="submit"
+                className="btn-submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Submit Ticket"}
+              </button>
+            </div>
           </div>
-        )}
-        <form
-          className="issue-ticket-form"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "1rem",
-            width: "100%",
-          }}
-          onSubmit={handleSubmit}
-        >
-          <label style={{ fontWeight: 500, marginBottom: "0.2rem" }}>
-            Category
-          </label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            style={{
-              padding: "0.7rem 1rem",
-              borderRadius: "1rem",
-              border: "1.5px solid #4f8cff",
-              fontSize: "1rem",
-            }}
-            disabled={isSubmitting}
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-          <label style={{ fontWeight: 500, marginBottom: "0.2rem" }}>
-            Details <span style={{ color: "#e11d48" }}>*</span>
-          </label>
-          <textarea
-            value={details}
-            onChange={(e) => setDetails(e.target.value)}
-            style={{
-              padding: "0.7rem 1rem",
-              borderRadius: "1rem",
-              border: "1.5px solid #4f8cff",
-              fontSize: "1rem",
-              resize: "vertical",
-            }}
-            disabled={isSubmitting}
-          />
-          <label style={{ fontWeight: 500, marginBottom: "0.2rem" }}>
-            Name <span style={{ color: "#e11d48" }}>*</span>
-          </label>
-          <input
-            value={name}
-            readOnly
-            style={{
-              padding: "0.7rem 1rem",
-              borderRadius: "1rem",
-              border: "1.5px solid #4f8cff",
-              fontSize: "1rem",
-              background: "#f3f4f6",
-              color: "#64748b",
-              cursor: "not-allowed",
-            }}
-          />
-          <button
-            type="submit"
-            style={{
-              backgroundColor: "#4f8cff",
-              color: "white",
-              padding: "0.75rem",
-              borderRadius: "1rem",
-              border: "none",
-              fontSize: "1rem",
-              fontWeight: "500",
-              cursor: isSubmitting ? "not-allowed" : "pointer",
-              opacity: isSubmitting ? 0.7 : 1,
-            }}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Creating ticket..." : "Submit Ticket"}
-          </button>
         </form>
       </div>
 

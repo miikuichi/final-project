@@ -14,16 +14,13 @@ public class ModifyRequestEntity {
     private Long employeeId;
 
     @Column(name = "requested_by")
-    private String requestedBy; // Username of HR who made the request
+    private String requestedBy; // Role of user who made the request (admin/hr)
 
-    @Column(name = "field_name")
-    private String fieldName; // Which field to modify (e.g., "name", "email", "deptPosId")
+    @Column(name = "original_data", columnDefinition = "TEXT")
+    private String originalData; // JSON string of original employee data
 
-    @Column(name = "current_value")
-    private String currentValue; // Current value in the database
-
-    @Column(name = "requested_value")
-    private String requestedValue; // New value requested
+    @Column(name = "updated_data", columnDefinition = "TEXT")
+    private String updatedData; // JSON string of updated employee data
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -38,10 +35,10 @@ public class ModifyRequestEntity {
     @Column(name = "processed_by")
     private String processedBy; // Username of admin who approved/rejected
 
-    @Column(name = "reason")
+    @Column(name = "reason", columnDefinition = "TEXT")
     private String reason; // Reason for the change request
 
-    @Column(name = "admin_comments")
+    @Column(name = "admin_comments", columnDefinition = "TEXT")
     private String adminComments; // Admin's comments on approval/rejection
 
     public enum RequestStatus {
@@ -52,13 +49,12 @@ public class ModifyRequestEntity {
     public ModifyRequestEntity() {
     }
 
-    public ModifyRequestEntity(Long employeeId, String requestedBy, String fieldName,
-            String currentValue, String requestedValue, String reason) {
+    public ModifyRequestEntity(Long employeeId, String requestedBy, String originalData,
+            String updatedData, String reason) {
         this.employeeId = employeeId;
         this.requestedBy = requestedBy;
-        this.fieldName = fieldName;
-        this.currentValue = currentValue;
-        this.requestedValue = requestedValue;
+        this.originalData = originalData;
+        this.updatedData = updatedData;
         this.reason = reason;
     }
 
@@ -87,28 +83,20 @@ public class ModifyRequestEntity {
         this.requestedBy = requestedBy;
     }
 
-    public String getFieldName() {
-        return fieldName;
+    public String getOriginalData() {
+        return originalData;
     }
 
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
+    public void setOriginalData(String originalData) {
+        this.originalData = originalData;
     }
 
-    public String getCurrentValue() {
-        return currentValue;
+    public String getUpdatedData() {
+        return updatedData;
     }
 
-    public void setCurrentValue(String currentValue) {
-        this.currentValue = currentValue;
-    }
-
-    public String getRequestedValue() {
-        return requestedValue;
-    }
-
-    public void setRequestedValue(String requestedValue) {
-        this.requestedValue = requestedValue;
+    public void setUpdatedData(String updatedData) {
+        this.updatedData = updatedData;
     }
 
     public RequestStatus getStatus() {

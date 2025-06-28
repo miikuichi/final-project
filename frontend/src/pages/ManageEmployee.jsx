@@ -59,6 +59,75 @@ export default function ManageEmployee() {
     }
   };
 
+  // Submit modify request (for HR users)
+  const submitModifyRequest = async (
+    originalEmployee,
+    updatedEmployee,
+    reason
+  ) => {
+    try {
+      const modifyRequest = {
+        employeeId: originalEmployee.id,
+        originalData: JSON.stringify(originalEmployee),
+        updatedData: JSON.stringify(updatedEmployee),
+        reason: reason,
+        requestedBy: role, // "admin" or "hr"
+        status: "PENDING",
+      };
+
+      const response = await fetch(
+        "http://localhost:8080/api/modify-requests",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(modifyRequest),
+        }
+      );
+
+      if (response.ok) {
+        alert(
+          "Modify request submitted successfully! Waiting for admin approval."
+        );
+        setEditEmp(null);
+        setSelected(null);
+      } else {
+        alert("Failed to submit modify request");
+      }
+    } catch (error) {
+      console.error("Error submitting modify request:", error);
+      alert("Error submitting modify request");
+    }
+  };
+
+  // Direct update (for Admin users)
+  const directUpdateEmployee = async (updatedEmployee) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/employees/${updatedEmployee.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedEmployee),
+        }
+      );
+      if (response.ok) {
+        alert("Employee updated successfully!");
+        refreshEmployees();
+        setEditEmp(null);
+        setSelected(null);
+      } else {
+        alert("Failed to update employee");
+      }
+    } catch (error) {
+      console.error("Error updating employee:", error);
+      alert("Error updating employee");
+    }
+  };
+
   useEffect(() => {
     refreshEmployees();
   }, []);
@@ -82,24 +151,7 @@ export default function ManageEmployee() {
 
   return (
     <div>
-      {role === "admin" ? (
-        <AdminNavBar
-          onHome={() => window.location.assign("/admin")}
-          onLogout={() => {
-            localStorage.removeItem("userRole");
-            window.location.assign("/");
-          }}
-        />
-      ) : (
-        <HRNavBar
-          onHome={() => window.location.assign("/hr")}
-          onIssueTicket={() => window.location.assign("/issue-ticket")}
-          onLogout={() => {
-            localStorage.removeItem("userRole");
-            window.location.assign("/");
-          }}
-        />
-      )}
+      {role === "admin" ? <AdminNavBar /> : <HRNavBar />}
 
       <div
         className="manage-employee-container"
@@ -212,29 +264,24 @@ export default function ManageEmployee() {
             {editEmp && (
               <EditEmployeeModal
                 employee={editEmp}
-                onSave={async (updatedEmployee) => {
-                  try {
-                    const response = await fetch(
-                      `http://localhost:8080/api/employees/${updatedEmployee.id}`,
-                      {
-                        method: "PUT",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(updatedEmployee),
-                      }
+                originalEmployee={
+                  employees.find((e) => e.id === editEmp.id) || editEmp
+                }
+                userRole={role}
+                onSave={(updatedEmployee, reason) => {
+                  const originalEmployee =
+                    employees.find((e) => e.id === updatedEmployee.id) ||
+                    updatedEmployee;
+                  if (role === "admin") {
+                    // Admin can directly update
+                    directUpdateEmployee(updatedEmployee);
+                  } else {
+                    // HR needs to submit modify request
+                    submitModifyRequest(
+                      originalEmployee,
+                      updatedEmployee,
+                      reason
                     );
-                    if (response.ok) {
-                      alert("Employee updated successfully!");
-                      refreshEmployees();
-                      setEditEmp(null);
-                      setSelected(null);
-                    } else {
-                      alert("Failed to update employee");
-                    }
-                  } catch (error) {
-                    console.error("Error updating employee:", error);
-                    alert("Error updating employee");
                   }
                 }}
                 onCancel={() => setEditEmp(null)}
@@ -249,7 +296,15 @@ export default function ManageEmployee() {
 }
 
 // Edit Employee Modal Component
-function EditEmployeeModal({ employee, onSave, onCancel, onUpdate }) {
+function EditEmployeeModal({
+  employee,
+  originalEmployee,
+  userRole,
+  onSave,
+  onCancel,
+  onUpdate,
+}) {
+  const [reason, setReason] = useState("");
   const [departments] = useState({
     IT: [
       "Software Developer",
@@ -273,13 +328,54 @@ function EditEmployeeModal({ employee, onSave, onCancel, onUpdate }) {
     ],
   });
 
+  // Salary mapping based on position
+  const positionSalaries = {
+    "Software Developer": 75000,
+    "System Administrator": 70000,
+    "IT Support": 45000,
+    "DevOps Engineer": 85000,
+    "HR Manager": 80000,
+    Recruiter: 55000,
+    "HR Assistant": 40000,
+    "Training Coordinator": 50000,
+    Accountant: 60000,
+    "Financial Analyst": 65000,
+    "Finance Manager": 90000,
+    Auditor: 70000,
+    "Marketing Manager": 75000,
+    "Content Creator": 50000,
+    "Digital Marketer": 55000,
+    "Brand Manager": 70000,
+    "Operations Manager": 85000,
+    "Project Manager": 80000,
+    "Business Analyst": 65000,
+    "Quality Assurance": 55000,
+  };
+
   const handleInputChange = (field, value) => {
-    onUpdate({ ...employee, [field]: value });
+    const updatedEmployee = { ...employee, [field]: value };
+
+    // Auto-assign salary when position changes
+    if (field === "position" && value) {
+      const salary = positionSalaries[value];
+      if (salary) {
+        updatedEmployee.salary = salary;
+      }
+    }
+
+    onUpdate(updatedEmployee);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(employee);
+
+    // For HR users, reason is required
+    if (userRole === "hr" && !reason.trim()) {
+      alert("Please provide a reason for the changes.");
+      return;
+    }
+
+    onSave(employee, reason);
   };
 
   return (
@@ -390,6 +486,29 @@ function EditEmployeeModal({ employee, onSave, onCancel, onUpdate }) {
                 fontWeight: "bold",
               }}
             >
+              Phone:
+            </label>
+            <input
+              type="text"
+              value={employee.cellphone || ""}
+              onChange={(e) => handleInputChange("cellphone", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
               Department:
             </label>
             <select
@@ -444,6 +563,141 @@ function EditEmployeeModal({ employee, onSave, onCancel, onUpdate }) {
             </select>
           </div>
 
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
+              Salary (Auto-calculated):
+            </label>
+            <input
+              type="text"
+              value={`₱${employee.salary?.toLocaleString() || "0"}`}
+              readOnly
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+                backgroundColor: "#f5f5f5",
+                color: "#666",
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
+              Address:
+            </label>
+            <input
+              type="text"
+              placeholder="House/Unit/Street"
+              value={employee.addressHouse || ""}
+              onChange={(e) =>
+                handleInputChange("addressHouse", e.target.value)
+              }
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+                marginBottom: "0.5rem",
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Barangay"
+              value={employee.addressBarangay || ""}
+              onChange={(e) =>
+                handleInputChange("addressBarangay", e.target.value)
+              }
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+                marginBottom: "0.5rem",
+              }}
+            />
+            <input
+              type="text"
+              placeholder="City/Municipality"
+              value={employee.addressCity || ""}
+              onChange={(e) => handleInputChange("addressCity", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+                marginBottom: "0.5rem",
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Province"
+              value={employee.addressProvince || ""}
+              onChange={(e) =>
+                handleInputChange("addressProvince", e.target.value)
+              }
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+                marginBottom: "0.5rem",
+              }}
+            />
+            <input
+              type="text"
+              placeholder="ZIP Code"
+              value={employee.addressZip || ""}
+              onChange={(e) => handleInputChange("addressZip", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            />
+          </div>
+
+          {userRole === "hr" && (
+            <div style={{ marginBottom: "1rem" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "0.5rem",
+                  fontWeight: "bold",
+                }}
+              >
+                Reason for Changes: *
+              </label>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Please explain why these changes are needed..."
+                style={{
+                  width: "100%",
+                  padding: "0.5rem",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                  minHeight: "80px",
+                  resize: "vertical",
+                }}
+                required
+              />
+            </div>
+          )}
+
           <div
             style={{
               display: "flex",
@@ -477,7 +731,7 @@ function EditEmployeeModal({ employee, onSave, onCancel, onUpdate }) {
                 cursor: "pointer",
               }}
             >
-              Save Changes
+              {userRole === "hr" ? "Submit Request" : "Save Changes"}
             </button>
           </div>
         </form>
@@ -525,26 +779,13 @@ function EmployeeDetailsModal({ employee, onClose, onEdit }) {
         >
           <div>
             <p>
-              <strong>Name:</strong> {employee.firstName}{" "}
-              {employee.middleInitial} {employee.lastName} {employee.suffix}
+              <strong>Name:</strong> {employee.firstName} {employee.lastName}
             </p>
             <p>
               <strong>Email:</strong> {employee.email}
             </p>
             <p>
               <strong>Phone:</strong> {employee.cellphone || "N/A"}
-            </p>
-            <p>
-              <strong>Birthday:</strong> {employee.birthday || "N/A"}
-            </p>
-            <p>
-              <strong>Date Hired:</strong> {employee.dateHired}
-            </p>
-            <p>
-              <strong>Blood Type:</strong> {employee.bloodType || "N/A"}
-            </p>
-            <p>
-              <strong>Religion:</strong> {employee.religion || "N/A"}
             </p>
           </div>
           <div>
@@ -556,11 +797,6 @@ function EmployeeDetailsModal({ employee, onClose, onEdit }) {
             </p>
             <p>
               <strong>Salary:</strong> ₱{employee.salary?.toLocaleString()}
-            </p>
-            <p>
-              <strong>Address:</strong> {employee.addressHouse || ""}{" "}
-              {employee.addressBarangay || ""} {employee.addressCity || ""}{" "}
-              {employee.addressProvince || ""} {employee.addressZip || ""}
             </p>
           </div>
         </div>

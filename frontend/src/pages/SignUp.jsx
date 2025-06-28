@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 import "./LandingPage.css";
+import "./AddEmployee.css";
 
 export default function SignUp() {
   const [username, setUsername] = useState("");
@@ -39,39 +40,89 @@ export default function SignUp() {
   };
 
   return (
-    <div className="login-container">
+    <div className="add-employee-container" style={{ maxWidth: "400px" }}>
       <h2>Sign Up</h2>
-      <form onSubmit={handleSignUp} className="login-form">
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-        />
-        <Button label="Sign Up" type="submit" style={{ width: "100%" }} />
-        {error && <div className="error">{error}</div>}
-        {success && <div className="success">{success}</div>}
+      
+      <form onSubmit={handleSignUp} className="employee-form">
+        <div className="form-section">
+          <h3>Create Account</h3>
+          
+          <div className="form-group">
+            <label>Username *</label>
+            <input
+              type="text"
+              placeholder="Enter username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label>Password *</label>
+            <input
+              type="password"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label>Confirm Password *</label>
+            <input
+              type="password"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {error && (
+            <div style={{
+              color: "#ef4444",
+              backgroundColor: "#fef2f2",
+              padding: "0.75rem",
+              borderRadius: "0.5rem",
+              border: "1px solid #fecaca",
+              marginBottom: "1rem"
+            }}>
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div style={{
+              color: "#059669",
+              backgroundColor: "#f0fdf4",
+              padding: "0.75rem",
+              borderRadius: "0.5rem",
+              border: "1px solid #bbf7d0",
+              marginBottom: "1rem"
+            }}>
+              {success}
+            </div>
+          )}
+
+          <div className="form-actions">
+            <button
+              type="button"
+              className="btn-cancel"
+              onClick={() => navigate("/")}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-submit"
+            >
+              Sign Up
+            </button>
+          </div>
+        </div>
       </form>
-      <Button
-        label="Cancel"
-        onClick={() => navigate("/")}
-        style={{ width: "100%", marginTop: "0.5rem" }}
-      />
     </div>
   );
 }

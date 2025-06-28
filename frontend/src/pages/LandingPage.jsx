@@ -4,6 +4,7 @@ import { LoginNavBar } from "../components/NavBar";
 import { useRole } from "../components/RoleContext";
 import Button from "../components/Button";
 import "./LandingPage.css";
+import "./AddEmployee.css";
 
 export default function LandingPage() {
   const [username, setUsername] = useState("");
@@ -71,58 +72,73 @@ export default function LandingPage() {
         onHome={() => window.location.reload()}
         onIssueTicket={() => navigate("/issue-ticket")}
       />
-      <div className="login-container">
+      <div className="add-employee-container" style={{ maxWidth: "400px" }}>
         <h2>PayrollPro Login</h2>
-        <form onSubmit={handleLogin} className="login-form">
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            disabled={isLoading}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={isLoading}
-          />
-          <Button
-            label={isLoading ? "Logging in..." : "Log In"}
-            type="submit"
-            style={{
-              width: "100%",
-              opacity: isLoading ? 0.7 : 1,
-              cursor: isLoading ? "not-allowed" : "pointer",
-            }}
-            disabled={isLoading}
-          />
-          {error && (
-            <div
-              className="error"
-              style={{
-                color: "#e11d48",
-                backgroundColor: "#ffe4e6",
+        
+        <form onSubmit={handleLogin} className="employee-form">
+          <div className="form-section">
+            <h3>Sign In</h3>
+            
+            <div className="form-group">
+              <label>Username *</label>
+              <input
+                type="text"
+                placeholder="Enter username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div className="form-group">
+              <label>Password *</label>
+              <input
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            {error && (
+              <div style={{
+                color: "#ef4444",
+                backgroundColor: "#fef2f2",
                 padding: "0.75rem",
                 borderRadius: "0.5rem",
-                marginTop: "1rem",
-                textAlign: "center",
-              }}
-            >
-              {error}
+                border: "1px solid #fecaca",
+                marginBottom: "1rem"
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div className="form-actions">
+              <button
+                type="button"
+                className="btn-cancel"
+                onClick={handleSignup}
+                disabled={isLoading}
+              >
+                Sign Up
+              </button>
+              <button
+                type="submit"
+                className="btn-submit"
+                disabled={isLoading}
+                style={{
+                  opacity: isLoading ? 0.7 : 1,
+                  cursor: isLoading ? "not-allowed" : "pointer",
+                }}
+              >
+                {isLoading ? "Logging in..." : "Log In"}
+              </button>
             </div>
-          )}
+          </div>
         </form>
-        <Button
-          label="Sign Up"
-          onClick={handleSignup}
-          className="signup-btn"
-          style={{ width: "100%", marginTop: "1rem" }}
-          disabled={isLoading}
-        />
       </div>
     </div>
   );

@@ -21,10 +21,7 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <AdminNavBar
-        onHome={() => window.location.reload()}
-        onLogout={handleLogout}
-      />
+      <AdminNavBar />
       <div className="dashboard-container">
         <h2>Admin Dashboard</h2>
         <div className="dashboard-buttons">

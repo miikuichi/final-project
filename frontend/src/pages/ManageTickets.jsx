@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AdminNavBar, HRNavBar } from "../components/NavBar";
 import { useTickets } from "../components/TicketContext";
 import { useRole } from "../components/RoleContext";
@@ -7,6 +8,7 @@ import TicketModal from "../components/TicketModal";
 import "./ManageTickets.css";
 
 export default function ManageTickets() {
+  const navigate = useNavigate();
   const { tickets, removeTicket, fetchTickets, updateTicketStatus } =
     useTickets();
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -63,24 +65,14 @@ export default function ManageTickets() {
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
-      window.location.assign("/");
+      localStorage.removeItem("userRole");
+      navigate("/");
     }
   };
 
   return (
     <div>
-      {role === "admin" ? (
-        <AdminNavBar
-          onHome={() => window.location.assign("/admin")}
-          onLogout={handleLogout}
-        />
-      ) : (
-        <HRNavBar
-          onHome={() => window.location.assign("/hr")}
-          onIssueTicket={() => window.location.assign("/issue-ticket")}
-          onLogout={handleLogout}
-        />
-      )}
+      {role === "admin" ? <AdminNavBar /> : <HRNavBar />}
       <div
         className="manage-tickets-container"
         style={{

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { HRNavBar } from "../components/NavBar";
 import TicketCard from "../components/TicketCard";
 import TicketModal from "../components/TicketModal";
 import "./TrackTickets.css";
 
 export default function TrackTickets() {
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,7 +65,8 @@ export default function TrackTickets() {
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
-      window.location.assign("/");
+      localStorage.removeItem("userRole");
+      navigate("/");
     }
   };
 
@@ -72,11 +75,7 @@ export default function TrackTickets() {
 
   return (
     <div>
-      <HRNavBar
-        onHome={() => window.location.assign("/hr")}
-        onIssueTicket={() => window.location.assign("/issue-ticket")}
-        onLogout={handleLogout}
-      />
+      <HRNavBar />
       <div
         className="track-tickets-container"
         style={{
@@ -128,7 +127,7 @@ export default function TrackTickets() {
           <div style={{ textAlign: "center", padding: "2rem" }}>
             <p>You haven't submitted any tickets yet.</p>
             <button
-              onClick={() => window.location.assign("/issue-ticket")}
+              onClick={() => navigate("/issue-ticket")}
               style={{
                 backgroundColor: "#4f8cff",
                 color: "white",
@@ -149,6 +148,7 @@ export default function TrackTickets() {
                 key={ticket.id}
                 ticket={ticket}
                 onClick={handleCardClick}
+                currentUser={username}
               />
             ))}
           </div>

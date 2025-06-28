@@ -22,11 +22,7 @@ export default function HRDashboard() {
 
   return (
     <div>
-      <HRNavBar
-        onHome={() => window.location.reload()}
-        onIssueTicket={() => navigate("/issue-ticket")}
-        onLogout={handleLogout}
-      />
+      <HRNavBar />
       <div className="dashboard-container">
         <h2>HR Employee Dashboard</h2>
         <div className="dashboard-buttons">

@@ -1,7 +1,7 @@
 import React from "react";
 import "./TicketCard.css";
 
-export default function TicketCard({ ticket, onClick }) {
+export default function TicketCard({ ticket, onClick, currentUser }) {
   const getCardStyle = () => {
     let backgroundColor = "#f9fafb";
     let textColor = "#334155";
@@ -89,7 +89,7 @@ export default function TicketCard({ ticket, onClick }) {
         </span>
       </div>
       <p style={{ margin: "0.5rem 0", fontWeight: 500, opacity: 0.8 }}>
-        By: {ticket.name}
+        By: {currentUser && ticket.name === currentUser ? "You" : ticket.name}
       </p>
       <p style={{ margin: 0, fontSize: "1rem", lineHeight: 1.5 }}>
         {ticket.details?.length > 100
