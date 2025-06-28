@@ -3,7 +3,6 @@ package com.highroller.payroll_project.Controller;
 import com.highroller.payroll_project.Entity.UserEntity;
 import com.highroller.payroll_project.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

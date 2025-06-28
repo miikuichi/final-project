@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRole } from "../components/RoleContext";
 import { AdminNavBar, HRNavBar } from "../components/NavBar";
-import { getEmployees } from "../components/employeeStorage";
-import {
-  getModifyRequests,
-  addModifyRequest,
-  deleteModifyRequest,
-} from "../components/modifyRequestStorage";
-import Button from "../components/Button";
 import "./ManageEmployee.css";
 
 export default function ManageEmployee() {
@@ -17,37 +10,57 @@ export default function ManageEmployee() {
   const [filtered, setFiltered] = useState([]);
   const [selected, setSelected] = useState(null);
   const [editEmp, setEditEmp] = useState(null);
-  const [reason, setReason] = useState("");
-  const [modifyRequests, setModifyRequests] = useState([]);
-  const [showConfirmIdx, setShowConfirmIdx] = useState(null);
-  const [showRemoveIdx, setShowRemoveIdx] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Refresh employees after add
+  // Fetch employees from backend
   const refreshEmployees = async () => {
     try {
-      const emps = await getEmployees();
-      setEmployees(Array.isArray(emps) ? emps : []);
-      setFiltered(Array.isArray(emps) ? emps : []);
-    } catch (e) {
+      setLoading(true);
+      const response = await fetch("http://localhost:8080/api/employees");
+      if (response.ok) {
+        const data = await response.json();
+        setEmployees(Array.isArray(data) ? data : []);
+        setFiltered(Array.isArray(data) ? data : []);
+      } else {
+        console.error("Failed to fetch employees");
+        setEmployees([]);
+        setFiltered([]);
+      }
+    } catch (error) {
+      console.error("Error fetching employees:", error);
       setEmployees([]);
       setFiltered([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Fetch modify requests from backend
-  const refreshModifyRequests = async () => {
-    try {
-      const reqs = await getModifyRequests();
-      setModifyRequests(Array.isArray(reqs) ? reqs : []);
-    } catch (e) {
-      setModifyRequests([]);
+  // Delete employee
+  const deleteEmployee = async (id) => {
+    if (window.confirm("Are you sure you want to delete this employee?")) {
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/employees/${id}`,
+          {
+            method: "DELETE",
+          }
+        );
+        if (response.ok) {
+          alert("Employee deleted successfully!");
+          refreshEmployees();
+          setSelected(null);
+        } else {
+          alert("Failed to delete employee");
+        }
+      } catch (error) {
+        console.error("Error deleting employee:", error);
+        alert("Error deleting employee");
+      }
     }
   };
 
   useEffect(() => {
     refreshEmployees();
-    refreshModifyRequests();
   }, []);
 
   useEffect(() => {
@@ -58,9 +71,10 @@ export default function ManageEmployee() {
       setFiltered(
         employees.filter(
           (e) =>
-            (e.employeeId && e.employeeId.toLowerCase().includes(s)) ||
+            (e.id && e.id.toString().includes(s)) ||
             (e.lastName && e.lastName.toLowerCase().includes(s)) ||
-            (e.firstName && e.firstName.toLowerCase().includes(s))
+            (e.firstName && e.firstName.toLowerCase().includes(s)) ||
+            (e.email && e.email.toLowerCase().includes(s))
         )
       );
     }
@@ -86,18 +100,24 @@ export default function ManageEmployee() {
           }}
         />
       )}
+
       <div
         className="manage-employee-container"
         style={{
-          maxWidth: "40vw",
-          padding: "1.2rem 1.2rem",
+          maxWidth: "800px",
+          margin: "0 auto",
+          padding: "2rem",
           background: "#fff",
-          borderRadius: 10,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          alignItems: "center",
-          marginTop: "12rem auto",
+          borderRadius: "1.5rem",
+          boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
+          minHeight: "90vh",
+          marginTop: "4.5rem",
         }}
       >
+        <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+          Manage Employees
+        </h2>
+
         <div className="search-bar-row">
           <input
             className="search-bar"
@@ -107,745 +127,478 @@ export default function ManageEmployee() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="employee-list">
-          {filtered.length === 0 && (
-            <div className="no-employees">No employees found.</div>
-          )}
-          {filtered.map((emp, idx) => (
-            <div
-              className="employee-card"
-              key={emp.employeeId || emp.lastName + emp.firstName}
-            >
-              <div className="employee-card-content">
-                <div className="employee-card-img">
-                  {emp.image ? (
-                    <img
-                      src={
-                        typeof emp.image === "string"
-                          ? emp.image
-                          : URL.createObjectURL(emp.image)
-                      }
-                      alt="Employee"
-                      className="card-img-thumb"
-                    />
-                  ) : (
-                    <div className="card-img-placeholder">?</div>
-                  )}
+
+        {loading ? (
+          <div style={{ textAlign: "center", padding: "2rem" }}>
+            Loading employees...
+          </div>
+        ) : (
+          <>
+            <div className="employee-list">
+              {filtered.length === 0 ? (
+                <div className="no-employees">
+                  {search
+                    ? "No employees found matching your search."
+                    : "No employees found. Add some employees first."}
                 </div>
-                <div className="employee-card-main">
-                  <span className="employee-name">
-                    {emp.lastName}, {emp.firstName}
-                  </span>
-                  <span className="employee-id">
-                    ID: {emp.employeeId || "N/A"}
-                  </span>
-                </div>
-              </div>
-              <div
-                style={{ display: "flex", gap: "0.7rem", marginTop: "0.7rem" }}
-              >
-                <Button
-                  className="show-details-btn"
-                  label="Show full details"
-                  onClick={() => setSelected(emp)}
-                />
-                <Button
-                  className="add-btn"
-                  style={{ background: "#e53e3e" }}
-                  label="Remove Employee"
-                  onClick={async () => {
-                    setShowRemoveIdx(idx);
-                  }}
-                  disabled={loading}
-                />
-              </div>
-              {showRemoveIdx === idx && (
-                <div className="modal-overlay">
-                  <div className="modal">
-                    <h3>Remove Employee</h3>
-                    <p>Are you sure you want to remove this employee?</p>
-                    <div className="modal-actions">
-                      <Button
-                        className="add-btn"
-                        label="Yes"
-                        onClick={async () => {
-                          setLoading(true);
-                          try {
-                            if (!emp.firstName || !emp.lastName)
-                              throw new Error(
-                                "No firstName or lastName found for this employee."
-                              );
-                            await import("../components/employeeStorage").then(
-                              (m) =>
-                                m.removeEmployeeByName(
-                                  emp.firstName,
-                                  emp.lastName
-                                )
-                            );
-                            setShowRemoveIdx(null);
-                            refreshEmployees();
-                            alert("Employee removed successfully.");
-                          } catch (e) {
-                            alert("Failed to remove employee: " + e.message);
-                          } finally {
-                            setLoading(false);
-                          }
-                        }}
-                        disabled={loading}
-                      />
-                      <Button
-                        className="clear-btn"
-                        label="No"
-                        onClick={() => setShowRemoveIdx(null)}
-                      />
+              ) : (
+                filtered.map((emp) => (
+                  <div key={emp.id} className="employee-card">
+                    <div className="employee-card-content">
+                      <div className="employee-card-img">
+                        <div className="card-img-placeholder">👤</div>
+                      </div>
+                      <div className="employee-card-main">
+                        <div className="employee-name">
+                          {emp.firstName} {emp.lastName}
+                        </div>
+                        <div className="employee-id">ID: {emp.id}</div>
+                        <div className="employee-id">Email: {emp.email}</div>
+                        <div className="employee-id">
+                          {emp.department} - {emp.position}
+                        </div>
+                        <div className="employee-id">
+                          Salary: ₱{emp.salary?.toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="employee-card-actions">
+                        <button
+                          style={{
+                            background: "#3b82f6",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "4px",
+                            padding: "0.5rem 1rem",
+                            cursor: "pointer",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.9rem",
+                          }}
+                          onClick={() => setSelected(emp)}
+                        >
+                          View Details
+                        </button>
+                        <button
+                          style={{
+                            background: "#ef4444",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "4px",
+                            padding: "0.5rem 1rem",
+                            cursor: "pointer",
+                            fontSize: "0.9rem",
+                          }}
+                          onClick={() => deleteEmployee(emp.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))
               )}
             </div>
-          ))}
-        </div>
-        {selected && (
-          <div className="modal-overlay">
-            <div className="modal employee-modal">
-              <button className="close-btn" onClick={() => setSelected(null)}>
-                &times;
-              </button>
-              <h3>Employee Details</h3>
-              <div className="employee-details">
-                {selected.image && (
-                  <img
-                    src={
-                      typeof selected.image === "string"
-                        ? selected.image
-                        : URL.createObjectURL(selected.image)
-                    }
-                    alt="Employee"
-                    className="preview-img"
-                  />
-                )}
-                <div>
-                  <b>Database Emp ID:</b> {selected.empId || "N/A"}
-                </div>
-                <div>
-                  <b>Employee ID:</b> {selected.employeeId || "N/A"}
-                </div>
-                <div>
-                  <b>Name:</b> {selected.lastName}, {selected.firstName}{" "}
-                  {selected.middleInitial && selected.middleInitial + "."}{" "}
-                  {selected.suffix}
-                </div>
-                <div>
-                  <b>Birthday:</b> {selected.birthday}
-                </div>
-                <div>
-                  <b>Cellphone:</b> {selected.cellphone}
-                </div>
-                <div>
-                  <b>Date Hired:</b> {selected.dateHired}
-                </div>
-                <div>
-                  <b>Religion:</b> {selected.religion}
-                </div>
-                <div>
-                  <b>Bloodtype:</b> {selected.bloodtype}
-                </div>
-                <div>
-                  <b>Department:</b> {selected.department}
-                </div>
-                <div>
-                  <b>Position:</b> {selected.position}
-                </div>
-                <div>
-                  <b>Course:</b> {selected.course}
-                </div>
-                <div>
-                  <b>School:</b> {selected.school}
-                </div>
-                <div>
-                  <b>Licenses:</b> {selected.licenses}
-                </div>
-                <div>
-                  <b>PhilHealth:</b> {selected.philhealth}
-                </div>
-                <div>
-                  <b>SSS:</b> {selected.sss}
-                </div>
-                <div>
-                  <b>Pag-IBIG:</b> {selected.pagibig}
-                </div>
-                <div>
-                  <b>TIN:</b> {selected.tin}
-                </div>
-                <div>
-                  <b>Email:</b> {selected.email}
-                </div>
-                <div>
-                  <b>Permanent Address:</b>{" "}
-                  {selected.permanentAddress &&
-                    Object.values(selected.permanentAddress)
-                      .filter(Boolean)
-                      .join(", ")}
-                </div>
-                <div>
-                  <b>Current Address:</b>{" "}
-                  {selected.currentAddress &&
-                    Object.values(selected.currentAddress)
-                      .filter(Boolean)
-                      .join(", ")}
-                </div>
-              </div>
-              <Button
-                className="modify-btn"
-                label="Modify"
-                onClick={() => {
-                  setEditEmp({
-                    ...selected,
-                    // Remove nested dependents and emergencyContact
-                  });
+
+            {selected && (
+              <EmployeeDetailsModal
+                employee={selected}
+                onClose={() => setSelected(null)}
+                onEdit={() => {
+                  setEditEmp({ ...selected });
                   setSelected(null);
                 }}
               />
-            </div>
-          </div>
-        )}
-        {editEmp && (
-          <div className="modal-overlay">
-            <div className="modal employee-modal">
-              <button className="close-btn" onClick={() => setEditEmp(null)}>
-                &times;
-              </button>
-              <div
-                className="add-employee-container wide"
-                style={{
-                  margin: "0 auto",
-                  maxWidth: 900,
-                  maxHeight: "90vh",
-                  overflowY: "auto",
-                }}
-              >
-                <h2>Edit Employee</h2>
-                <form
-                  className="add-employee-form"
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    try {
-                      await import("../components/employeeStorage").then((m) =>
-                        m.updateEmployee(editEmp)
-                      );
-                      setEditEmp(null);
-                      alert("Employee updated successfully.");
+            )}
+
+            {editEmp && (
+              <EditEmployeeModal
+                employee={editEmp}
+                onSave={async (updatedEmployee) => {
+                  try {
+                    const response = await fetch(
+                      `http://localhost:8080/api/employees/${updatedEmployee.id}`,
+                      {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(updatedEmployee),
+                      }
+                    );
+                    if (response.ok) {
+                      alert("Employee updated successfully!");
                       refreshEmployees();
-                    } catch (err) {
-                      alert("Failed to update employee: " + err.message);
+                      setEditEmp(null);
+                      setSelected(null);
+                    } else {
+                      alert("Failed to update employee");
                     }
-                  }}
-                  style={{ gap: "1.2rem" }}
-                >
-                  {/* All fields, similar to AddEmployeeInline, but bound to editEmp */}
-                  <div className="form-row image-name-row">
-                    <div className="image-upload-container">
-                      <label
-                        htmlFor="edit-image-upload"
-                        className="image-label"
-                      >
-                        Image
-                      </label>
-                      <div className="image-preview-box">
-                        {editEmp.image ? (
-                          <img
-                            src={
-                              typeof editEmp.image === "string"
-                                ? editEmp.image
-                                : URL.createObjectURL(editEmp.image)
-                            }
-                            alt="Employee"
-                            className="preview-img-large"
-                          />
-                        ) : (
-                          <span className="image-placeholder">No Image</span>
-                        )}
-                      </div>
-                      <div className="image-upload-center">
-                        <input
-                          id="edit-image-upload"
-                          type="file"
-                          name="image"
-                          accept="image/*"
-                          onChange={(e) =>
-                            setEditEmp((emp) => ({
-                              ...emp,
-                              image: e.target.files[0],
-                            }))
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="name-flexbox">
-                      <div className="form-row single-field-row">
-                        <label>Database Emp ID:</label>
-                        <input
-                          className="ae-textbox"
-                          name="empId"
-                          value={editEmp.empId || ""}
-                          onChange={(e) =>
-                            setEditEmp((emp) => ({
-                              ...emp,
-                              empId: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                      <div className="form-row single-field-row">
-                        <label>Employee ID:</label>
-                        <input
-                          className="ae-textbox"
-                          name="employeeId"
-                          value={editEmp.employeeId || ""}
-                          onChange={(e) =>
-                            setEditEmp((emp) => ({
-                              ...emp,
-                              employeeId: e.target.value,
-                            }))
-                          }
-                          required
-                        />
-                      </div>
-                      <div className="form-row single-field-row">
-                        <label>Last Name:</label>
-                        <input
-                          className="ae-textbox"
-                          name="lastName"
-                          value={editEmp.lastName}
-                          onChange={(e) =>
-                            setEditEmp((emp) => ({
-                              ...emp,
-                              lastName: e.target.value,
-                            }))
-                          }
-                          required
-                        />
-                      </div>
-                      <div className="form-row single-field-row">
-                        <label>First Name:</label>
-                        <input
-                          className="ae-textbox"
-                          name="firstName"
-                          value={editEmp.firstName}
-                          onChange={(e) =>
-                            setEditEmp((emp) => ({
-                              ...emp,
-                              firstName: e.target.value,
-                            }))
-                          }
-                          required
-                        />
-                      </div>
-                      <div className="form-row mi-suffix-row-inline">
-                        <label style={{ marginRight: "0.5rem" }}>M.I.:</label>
-                        <input
-                          className="ae-textbox"
-                          name="middleInitial"
-                          value={editEmp.middleInitial}
-                          maxLength={1}
-                          onChange={(e) =>
-                            setEditEmp((emp) => ({
-                              ...emp,
-                              middleInitial: e.target.value,
-                            }))
-                          }
-                          style={{ width: "3.5rem", marginRight: "1.5rem" }}
-                        />
-                        <label style={{ marginRight: "0.5rem" }}>Suffix:</label>
-                        <select
-                          name="suffix"
-                          value={editEmp.suffix}
-                          onChange={(e) =>
-                            setEditEmp((emp) => ({
-                              ...emp,
-                              suffix: e.target.value,
-                            }))
-                          }
-                          style={{ minWidth: "80px" }}
-                        >
-                          <option value="">--</option>
-                          <option value="Jr.">Jr.</option>
-                          <option value="Sr.">Sr.</option>
-                          <option value="II">II</option>
-                          <option value="III">III</option>
-                          <option value="IV">IV</option>
-                          <option value="V">V</option>
-                        </select>
-                      </div>
-                      <div className="form-row single-field-row">
-                        <label>Birthday</label>
-                        <input
-                          type="date"
-                          className="ae-textbox"
-                          name="birthday"
-                          value={editEmp.birthday}
-                          onChange={(e) =>
-                            setEditEmp((emp) => ({
-                              ...emp,
-                              birthday: e.target.value,
-                            }))
-                          }
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="form-row address-row">
-                    <label className="address-label">Permanent Address:</label>
-                  </div>
-                  <div className="form-row address-fields-row">
-                    <input
-                      className="ae-textbox"
-                      name="house"
-                      placeholder="House/Building No."
-                      value={editEmp.permanentAddress?.house || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          permanentAddress: {
-                            ...emp.permanentAddress,
-                            house: e.target.value,
-                          },
-                        }))
-                      }
-                      required
-                    />
-                    <input
-                      className="ae-textbox"
-                      name="barangay"
-                      placeholder="Barangay"
-                      value={editEmp.permanentAddress?.barangay || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          permanentAddress: {
-                            ...emp.permanentAddress,
-                            barangay: e.target.value,
-                          },
-                        }))
-                      }
-                      required
-                    />
-                    <input
-                      className="ae-textbox"
-                      name="city"
-                      placeholder="Municipality/City"
-                      value={editEmp.permanentAddress?.city || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          permanentAddress: {
-                            ...emp.permanentAddress,
-                            city: e.target.value,
-                          },
-                        }))
-                      }
-                      required
-                    />
-                    <input
-                      className="ae-textbox"
-                      name="province"
-                      placeholder="Province"
-                      value={editEmp.permanentAddress?.province || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          permanentAddress: {
-                            ...emp.permanentAddress,
-                            province: e.target.value,
-                          },
-                        }))
-                      }
-                      required
-                    />
-                    <input
-                      className="ae-textbox"
-                      name="zip"
-                      placeholder="ZIP Code"
-                      value={editEmp.permanentAddress?.zip || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          permanentAddress: {
-                            ...emp.permanentAddress,
-                            zip: e.target.value,
-                          },
-                        }))
-                      }
-                      required
-                      style={{ width: "6rem" }}
-                    />
-                  </div>
-                  <div className="form-row address-row">
-                    <label className="address-label">Current Address:</label>
-                  </div>
-                  <div className="form-row address-fields-row">
-                    <input
-                      className="ae-textbox"
-                      name="house"
-                      placeholder="House/Building No."
-                      value={editEmp.currentAddress?.house || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          currentAddress: {
-                            ...emp.currentAddress,
-                            house: e.target.value,
-                          },
-                        }))
-                      }
-                      required
-                    />
-                    <input
-                      className="ae-textbox"
-                      name="barangay"
-                      placeholder="Barangay"
-                      value={editEmp.currentAddress?.barangay || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          currentAddress: {
-                            ...emp.currentAddress,
-                            barangay: e.target.value,
-                          },
-                        }))
-                      }
-                      required
-                    />
-                    <input
-                      className="ae-textbox"
-                      name="city"
-                      placeholder="Municipality/City"
-                      value={editEmp.currentAddress?.city || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          currentAddress: {
-                            ...emp.currentAddress,
-                            city: e.target.value,
-                          },
-                        }))
-                      }
-                      required
-                    />
-                    <input
-                      className="ae-textbox"
-                      name="province"
-                      placeholder="Province"
-                      value={editEmp.currentAddress?.province || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          currentAddress: {
-                            ...emp.currentAddress,
-                            province: e.target.value,
-                          },
-                        }))
-                      }
-                      required
-                    />
-                    <input
-                      className="ae-textbox"
-                      name="zip"
-                      placeholder="ZIP Code"
-                      value={editEmp.currentAddress?.zip || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          currentAddress: {
-                            ...emp.currentAddress,
-                            zip: e.target.value,
-                          },
-                        }))
-                      }
-                      required
-                      style={{ width: "6rem" }}
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label>Cellphone:</label>
-                    <input
-                      name="cellphone"
-                      className="ae-textbox"
-                      value={editEmp.cellphone || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          cellphone: e.target.value,
-                        }))
-                      }
-                      required
-                    />
-                    <label>Date Hired:</label>
-                    <input
-                      type="date"
-                      name="dateHired"
-                      className="ae-textbox"
-                      value={editEmp.dateHired || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          dateHired: e.target.value,
-                        }))
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label>Religion:</label>
-                    <input
-                      name="religion"
-                      className="ae-textbox"
-                      value={editEmp.religion || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          religion: e.target.value,
-                        }))
-                      }
-                    />
-                    <label>Bloodtype:</label>
-                    <input
-                      name="bloodtype"
-                      className="ae-textbox"
-                      value={editEmp.bloodtype || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          bloodtype: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label>Department:</label>
-                    <input
-                      name="department"
-                      className="ae-textbox"
-                      value={editEmp.department || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          department: e.target.value,
-                        }))
-                      }
-                      required
-                    />
-                    <label>Position Title:</label>
-                    <input
-                      name="position"
-                      className="ae-textbox"
-                      value={editEmp.position || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          position: e.target.value,
-                        }))
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label>Course:</label>
-                    <input
-                      name="course"
-                      className="ae-textbox"
-                      value={editEmp.course || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          course: e.target.value,
-                        }))
-                      }
-                    />
-                    <label>School:</label>
-                    <input
-                      name="school"
-                      className="ae-textbox"
-                      value={editEmp.school || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          school: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label>Licenses:</label>
-                    <input
-                      name="licenses"
-                      className="ae-textbox"
-                      value={editEmp.licenses || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          licenses: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label>PhilHealth:</label>
-                    <input
-                      name="philhealth"
-                      className="ae-textbox"
-                      value={editEmp.philhealth || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          philhealth: e.target.value,
-                        }))
-                      }
-                    />
-                    <label>SSS:</label>
-                    <input
-                      name="sss"
-                      className="ae-textbox"
-                      value={editEmp.sss || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({ ...emp, sss: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <div className="form-row">
-                    <label>Pag-IBIG:</label>
-                    <input
-                      name="pagibig"
-                      className="ae-textbox"
-                      value={editEmp.pagibig || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({
-                          ...emp,
-                          pagibig: e.target.value,
-                        }))
-                      }
-                    />
-                    <label>TIN:</label>
-                    <input
-                      name="tin"
-                      className="ae-textbox"
-                      value={editEmp.tin || ""}
-                      onChange={(e) =>
-                        setEditEmp((emp) => ({ ...emp, tin: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <Button
-                    className="add-btn"
-                    type="submit"
-                    label="Confirm changes"
-                  />
-                </form>
-              </div>
-            </div>
-          </div>
+                  } catch (error) {
+                    console.error("Error updating employee:", error);
+                    alert("Error updating employee");
+                  }
+                }}
+                onCancel={() => setEditEmp(null)}
+                onUpdate={setEditEmp}
+              />
+            )}
+          </>
         )}
+      </div>
+    </div>
+  );
+}
+
+// Edit Employee Modal Component
+function EditEmployeeModal({ employee, onSave, onCancel, onUpdate }) {
+  const [departments] = useState({
+    IT: [
+      "Software Developer",
+      "System Administrator",
+      "IT Support",
+      "DevOps Engineer",
+    ],
+    HR: ["HR Manager", "Recruiter", "HR Assistant", "Training Coordinator"],
+    Finance: ["Accountant", "Financial Analyst", "Finance Manager", "Auditor"],
+    Marketing: [
+      "Marketing Manager",
+      "Content Creator",
+      "Digital Marketer",
+      "Brand Manager",
+    ],
+    Operations: [
+      "Operations Manager",
+      "Project Manager",
+      "Business Analyst",
+      "Quality Assurance",
+    ],
+  });
+
+  const handleInputChange = (field, value) => {
+    onUpdate({ ...employee, [field]: value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(employee);
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        background: "rgba(0, 0, 0, 0.5)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: "8px",
+          padding: "2rem",
+          maxWidth: "500px",
+          width: "90%",
+          maxHeight: "80vh",
+          overflowY: "auto",
+        }}
+      >
+        <h3 style={{ marginTop: 0, textAlign: "center" }}>Edit Employee</h3>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
+              First Name:
+            </label>
+            <input
+              type="text"
+              value={employee.firstName || ""}
+              onChange={(e) => handleInputChange("firstName", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              required
+            />
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
+              Last Name:
+            </label>
+            <input
+              type="text"
+              value={employee.lastName || ""}
+              onChange={(e) => handleInputChange("lastName", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              required
+            />
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
+              Email:
+            </label>
+            <input
+              type="email"
+              value={employee.email || ""}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              required
+            />
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
+              Department:
+            </label>
+            <select
+              value={employee.department || ""}
+              onChange={(e) => handleInputChange("department", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              required
+            >
+              <option value="">Select Department</option>
+              {Object.keys(departments).map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
+              Position:
+            </label>
+            <select
+              value={employee.position || ""}
+              onChange={(e) => handleInputChange("position", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              required
+            >
+              <option value="">Select Position</option>
+              {employee.department &&
+                departments[employee.department] &&
+                departments[employee.department].map((pos) => (
+                  <option key={pos} value={pos}>
+                    {pos}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "1rem",
+              justifyContent: "flex-end",
+              marginTop: "2rem",
+            }}
+          >
+            <button
+              type="button"
+              onClick={onCancel}
+              style={{
+                background: "#6b7280",
+                color: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                padding: "0.75rem 1.5rem",
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              style={{
+                background: "#3b82f6",
+                color: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                padding: "0.75rem 1.5rem",
+                cursor: "pointer",
+              }}
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// Employee Details Modal Component
+function EmployeeDetailsModal({ employee, onClose, onEdit }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        background: "rgba(0, 0, 0, 0.5)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: "8px",
+          padding: "2rem",
+          maxWidth: "600px",
+          width: "90%",
+          maxHeight: "80vh",
+          overflowY: "auto",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+        }}
+      >
+        <h3 style={{ marginTop: 0, textAlign: "center" }}>Employee Details</h3>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "1rem",
+          }}
+        >
+          <div>
+            <p>
+              <strong>Name:</strong> {employee.firstName}{" "}
+              {employee.middleInitial} {employee.lastName} {employee.suffix}
+            </p>
+            <p>
+              <strong>Email:</strong> {employee.email}
+            </p>
+            <p>
+              <strong>Phone:</strong> {employee.cellphone || "N/A"}
+            </p>
+            <p>
+              <strong>Birthday:</strong> {employee.birthday || "N/A"}
+            </p>
+            <p>
+              <strong>Date Hired:</strong> {employee.dateHired}
+            </p>
+            <p>
+              <strong>Blood Type:</strong> {employee.bloodType || "N/A"}
+            </p>
+            <p>
+              <strong>Religion:</strong> {employee.religion || "N/A"}
+            </p>
+          </div>
+          <div>
+            <p>
+              <strong>Department:</strong> {employee.department}
+            </p>
+            <p>
+              <strong>Position:</strong> {employee.position}
+            </p>
+            <p>
+              <strong>Salary:</strong> ₱{employee.salary?.toLocaleString()}
+            </p>
+            <p>
+              <strong>Address:</strong> {employee.addressHouse || ""}{" "}
+              {employee.addressBarangay || ""} {employee.addressCity || ""}{" "}
+              {employee.addressProvince || ""} {employee.addressZip || ""}
+            </p>
+          </div>
+        </div>
+        <div
+          style={{
+            marginTop: "1.5rem",
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: "1rem",
+          }}
+        >
+          <button
+            style={{
+              background: "#10b981",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              padding: "0.7rem 1.5rem",
+              cursor: "pointer",
+            }}
+            onClick={onEdit}
+          >
+            Edit Employee
+          </button>
+          <button
+            style={{
+              background: "#6b7280",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              padding: "0.7rem 1.5rem",
+              cursor: "pointer",
+            }}
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   );

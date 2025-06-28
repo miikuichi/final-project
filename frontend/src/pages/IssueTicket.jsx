@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { HRNavBar } from "../components/NavBar";
 import { useTickets } from "../components/TicketContext";
@@ -16,6 +16,19 @@ export default function IssueTicket() {
   const [countdown, setCountdown] = useState(3);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    // Fetch username from session
+    fetch("http://localhost:8080/api/users/session", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.username) {
+          setName(data.username);
+        }
+      });
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -139,14 +152,16 @@ export default function IssueTicket() {
           </label>
           <input
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            readOnly
             style={{
               padding: "0.7rem 1rem",
               borderRadius: "1rem",
               border: "1.5px solid #4f8cff",
               fontSize: "1rem",
+              background: "#f3f4f6",
+              color: "#64748b",
+              cursor: "not-allowed",
             }}
-            disabled={isSubmitting}
           />
           <button
             type="submit"

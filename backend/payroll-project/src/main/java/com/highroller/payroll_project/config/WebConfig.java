@@ -13,14 +13,11 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                        .allowedOrigins("http://localhost:5173")
+                        .allowedOrigins("http://localhost:5173", "http://localhost:5174")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("Content-Type", "X-Requested-With", "accept", "Origin",
-                                "Access-Control-Request-Method",
-                                "Access-Control-Request-Headers", "Access-Control-Allow-Origin")
-                        .exposedHeaders("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials")
+                        .allowedHeaders("*")
                         .allowCredentials(true)
-                        .maxAge(3600); // 1 hour max age
+                        .maxAge(3600);
             }
         };
     }

@@ -10,6 +10,20 @@ export default function TrackTickets() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    // Fetch username from session
+    fetch("http://localhost:8080/api/users/session", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.username) {
+          setUsername(data.username);
+        }
+      });
+  }, []);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -52,6 +66,9 @@ export default function TrackTickets() {
       window.location.assign("/");
     }
   };
+
+  // Filter tickets to only those submitted by the logged-in user
+  const myTickets = tickets.filter((ticket) => ticket.name === username);
 
   return (
     <div>
@@ -107,7 +124,7 @@ export default function TrackTickets() {
           <div style={{ textAlign: "center", padding: "2rem" }}>
             Loading your tickets...
           </div>
-        ) : tickets.length === 0 ? (
+        ) : myTickets.length === 0 ? (
           <div style={{ textAlign: "center", padding: "2rem" }}>
             <p>You haven't submitted any tickets yet.</p>
             <button
@@ -127,7 +144,7 @@ export default function TrackTickets() {
           </div>
         ) : (
           <div style={{ width: "100%", marginTop: "1rem" }}>
-            {tickets.map((ticket) => (
+            {myTickets.map((ticket) => (
               <TicketCard
                 key={ticket.id}
                 ticket={ticket}

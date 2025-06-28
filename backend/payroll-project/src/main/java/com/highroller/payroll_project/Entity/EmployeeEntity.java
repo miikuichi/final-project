@@ -1,6 +1,8 @@
 package com.highroller.payroll_project.Entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "employees")
@@ -8,85 +10,98 @@ public class EmployeeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int empId;
+    private Long id;
 
-    private String employeeId; // for frontend mapping
-    private String image; // store as URL or path
-    private String lastName;
+    // Basic Personal Information
+    @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
+
+    @Column(name = "last_name", nullable = false, length = 100)
+    private String lastName;
+
+    @Column(name = "middle_initial", length = 10)
     private String middleInitial;
+
+    @Column(name = "suffix", length = 20)
     private String suffix;
-    private String birthday;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "house", column = @Column(name = "perm_house")),
-            @AttributeOverride(name = "barangay", column = @Column(name = "perm_barangay")),
-            @AttributeOverride(name = "city", column = @Column(name = "perm_city")),
-            @AttributeOverride(name = "province", column = @Column(name = "perm_province")),
-            @AttributeOverride(name = "zip", column = @Column(name = "perm_zip"))
-    })
-    private Address permanentAddress;
-
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "house", column = @Column(name = "curr_house")),
-            @AttributeOverride(name = "barangay", column = @Column(name = "curr_barangay")),
-            @AttributeOverride(name = "city", column = @Column(name = "curr_city")),
-            @AttributeOverride(name = "province", column = @Column(name = "curr_province")),
-            @AttributeOverride(name = "zip", column = @Column(name = "curr_zip"))
-    })
-    private Address currentAddress;
-
-    private String cellphone;
-    private String dateHired;
-    private String religion;
-
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
-    private String course;
-    private String school;
-    private String licenses;
-    private String philhealth;
-    private String sss;
-    private String pagibig;
-    private String tin;
-    private String bloodtype;
+
+    @Column(name = "cellphone", length = 20)
+    private String cellphone;
+
+    @Column(name = "birthday")
+    private LocalDate birthday;
+
+    @Column(name = "date_hired", nullable = false)
+    private LocalDate dateHired;
+
+    @Column(name = "blood_type", length = 10)
+    private String bloodType;
+
+    // Employment Information (simplified - no foreign keys)
+    @Column(name = "department", nullable = false, length = 100)
     private String department;
+
+    @Column(name = "position", nullable = false, length = 100)
     private String position;
 
+    @Column(name = "salary", nullable = false)
+    private Double salary;
+
+    // Address Information (simplified - only one address)
+    @Column(name = "address_house")
+    private String addressHouse;
+
+    @Column(name = "address_barangay")
+    private String addressBarangay;
+
+    @Column(name = "address_city", length = 100)
+    private String addressCity;
+
+    @Column(name = "address_province", length = 100)
+    private String addressProvince;
+
+    @Column(name = "address_zip", length = 20)
+    private String addressZip;
+
+    // Optional fields
+    @Column(name = "religion", length = 100)
+    private String religion;
+
+    @Column(name = "image", columnDefinition = "LONGTEXT")
+    private String image;
+
+    // Timestamps
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    // Constructors
     public EmployeeEntity() {
     }
 
-    public int getEmpId() {
-        return empId;
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
-    public void setEmpId(int empId) {
-        this.empId = empId;
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
-    public String getEmployeeId() {
-        return employeeId;
+    // Getters and Setters
+    public Long getId() {
+        return id;
     }
 
-    public void setEmployeeId(String employeeId) {
-        this.employeeId = employeeId;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFirstName() {
@@ -95,6 +110,14 @@ public class EmployeeEntity {
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getMiddleInitial() {
@@ -113,28 +136,12 @@ public class EmployeeEntity {
         this.suffix = suffix;
     }
 
-    public String getBirthday() {
-        return birthday;
+    public String getEmail() {
+        return email;
     }
 
-    public void setBirthday(String birthday) {
-        this.birthday = birthday;
-    }
-
-    public Address getPermanentAddress() {
-        return permanentAddress;
-    }
-
-    public void setPermanentAddress(Address permanentAddress) {
-        this.permanentAddress = permanentAddress;
-    }
-
-    public Address getCurrentAddress() {
-        return currentAddress;
-    }
-
-    public void setCurrentAddress(Address currentAddress) {
-        this.currentAddress = currentAddress;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getCellphone() {
@@ -145,92 +152,28 @@ public class EmployeeEntity {
         this.cellphone = cellphone;
     }
 
-    public String getDateHired() {
+    public LocalDate getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(LocalDate birthday) {
+        this.birthday = birthday;
+    }
+
+    public LocalDate getDateHired() {
         return dateHired;
     }
 
-    public void setDateHired(String dateHired) {
+    public void setDateHired(LocalDate dateHired) {
         this.dateHired = dateHired;
     }
 
-    public String getReligion() {
-        return religion;
+    public String getBloodType() {
+        return bloodType;
     }
 
-    public void setReligion(String religion) {
-        this.religion = religion;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getCourse() {
-        return course;
-    }
-
-    public void setCourse(String course) {
-        this.course = course;
-    }
-
-    public String getSchool() {
-        return school;
-    }
-
-    public void setSchool(String school) {
-        this.school = school;
-    }
-
-    public String getLicenses() {
-        return licenses;
-    }
-
-    public void setLicenses(String licenses) {
-        this.licenses = licenses;
-    }
-
-    public String getPhilhealth() {
-        return philhealth;
-    }
-
-    public void setPhilhealth(String philhealth) {
-        this.philhealth = philhealth;
-    }
-
-    public String getSss() {
-        return sss;
-    }
-
-    public void setSss(String sss) {
-        this.sss = sss;
-    }
-
-    public String getPagibig() {
-        return pagibig;
-    }
-
-    public void setPagibig(String pagibig) {
-        this.pagibig = pagibig;
-    }
-
-    public String getTin() {
-        return tin;
-    }
-
-    public void setTin(String tin) {
-        this.tin = tin;
-    }
-
-    public String getBloodtype() {
-        return bloodtype;
-    }
-
-    public void setBloodtype(String bloodtype) {
-        this.bloodtype = bloodtype;
+    public void setBloodType(String bloodType) {
+        this.bloodType = bloodType;
     }
 
     public String getDepartment() {
@@ -247,5 +190,85 @@ public class EmployeeEntity {
 
     public void setPosition(String position) {
         this.position = position;
+    }
+
+    public Double getSalary() {
+        return salary;
+    }
+
+    public void setSalary(Double salary) {
+        this.salary = salary;
+    }
+
+    public String getAddressHouse() {
+        return addressHouse;
+    }
+
+    public void setAddressHouse(String addressHouse) {
+        this.addressHouse = addressHouse;
+    }
+
+    public String getAddressBarangay() {
+        return addressBarangay;
+    }
+
+    public void setAddressBarangay(String addressBarangay) {
+        this.addressBarangay = addressBarangay;
+    }
+
+    public String getAddressCity() {
+        return addressCity;
+    }
+
+    public void setAddressCity(String addressCity) {
+        this.addressCity = addressCity;
+    }
+
+    public String getAddressProvince() {
+        return addressProvince;
+    }
+
+    public void setAddressProvince(String addressProvince) {
+        this.addressProvince = addressProvince;
+    }
+
+    public String getAddressZip() {
+        return addressZip;
+    }
+
+    public void setAddressZip(String addressZip) {
+        this.addressZip = addressZip;
+    }
+
+    public String getReligion() {
+        return religion;
+    }
+
+    public void setReligion(String religion) {
+        this.religion = religion;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

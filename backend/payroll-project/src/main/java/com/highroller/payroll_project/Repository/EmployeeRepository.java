@@ -8,19 +8,20 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Integer> {
-    // Find by frontend employeeId
-    Optional<EmployeeEntity> findByEmployeeId(String employeeId);
+public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> {
 
-    // Find by last name (case-insensitive, partial match)
-    List<EmployeeEntity> findByLastNameContainingIgnoreCase(String lastName);
+    // Find employees by first and last name
+    List<EmployeeEntity> findByFirstNameAndLastName(String firstName, String lastName);
 
-    // Find by first name (case-insensitive, partial match)
-    List<EmployeeEntity> findByFirstNameContainingIgnoreCase(String firstName);
+    // Find employees by email (since email is unique)
+    Optional<EmployeeEntity> findByEmail(String email);
 
-    // Delete by frontend employeeId
-    void deleteByEmployeeId(String employeeId);
+    // Find employees by department
+    List<EmployeeEntity> findByDepartment(String department);
 
-    // Exists by frontend employeeId
-    boolean existsByEmployeeId(String employeeId);
+    // Find employees by position
+    List<EmployeeEntity> findByPosition(String position);
+
+    // Find employees by department and position
+    List<EmployeeEntity> findByDepartmentAndPosition(String department, String position);
 }
