@@ -90,11 +90,11 @@ export default function IssueTicket() {
       <HRNavBar />
       <div className="add-employee-container" style={{ maxWidth: "600px" }}>
         <h2>Issue Ticket</h2>
-        
+
         <form onSubmit={handleSubmit} className="employee-form">
           <div className="form-section">
             <h3>Ticket Information</h3>
-            
+
             <div className="form-group">
               <label>Name *</label>
               <input
@@ -137,11 +137,12 @@ export default function IssueTicket() {
                   fontSize: "1rem",
                   minHeight: "120px",
                   resize: "vertical",
-                  fontFamily: "inherit"
+                  fontFamily: "inherit",
                 }}
                 onFocus={(e) => {
                   e.target.style.borderColor = "#667eea";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(102, 126, 234, 0.1)";
+                  e.target.style.boxShadow =
+                    "0 0 0 3px rgba(102, 126, 234, 0.1)";
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = "#e2e8f0";
@@ -151,23 +152,25 @@ export default function IssueTicket() {
             </div>
 
             {error && (
-              <div style={{
-                color: "#ef4444",
-                backgroundColor: "#fef2f2",
-                padding: "0.75rem",
-                borderRadius: "0.5rem",
-                border: "1px solid #fecaca",
-                marginBottom: "1rem"
-              }}>
+              <div
+                style={{
+                  color: "#ef4444",
+                  backgroundColor: "#fef2f2",
+                  padding: "0.75rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid #fecaca",
+                  marginBottom: "1rem",
+                }}
+              >
                 {error}
               </div>
             )}
 
             <div className="form-actions">
-              <button 
+              <button
                 type="button"
                 className="btn-cancel"
-                onClick={() => isLoggedIn ? navigate("/hr") : navigate("/")}
+                onClick={() => (isLoggedIn ? navigate("/hr") : navigate("/"))}
               >
                 {isLoggedIn ? "Home" : "Cancel"}
               </button>

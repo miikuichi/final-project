@@ -349,7 +349,7 @@ export default function Payroll() {
               >
                 <div className="form-section">
                   <h3>Salary Computation</h3>
-                  
+
                   <div className="form-group">
                     <label>Monthly Rate</label>
                     <input
@@ -359,7 +359,7 @@ export default function Payroll() {
                       className="salary-input"
                     />
                   </div>
-                  
+
                   <div className="form-row">
                     <div className="form-group">
                       <label>Period From</label>
@@ -389,7 +389,7 @@ export default function Payroll() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="form-row">
                     <div className="form-group">
                       <label>Regular Hours</label>
@@ -418,7 +418,7 @@ export default function Payroll() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="form-row">
                     <div className="form-group">
                       <label>Holiday Hours</label>
@@ -447,7 +447,7 @@ export default function Payroll() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="form-actions">
                     <button
                       type="button"

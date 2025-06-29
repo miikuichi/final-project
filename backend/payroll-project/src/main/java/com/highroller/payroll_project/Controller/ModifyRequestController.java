@@ -5,12 +5,9 @@ import com.highroller.payroll_project.Entity.EmployeeEntity;
 import com.highroller.payroll_project.Repository.ModifyRequestRepository;
 import com.highroller.payroll_project.Repository.EmployeeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.servlet.http.HttpSession;
 
 import java.time.LocalDateTime;
 import java.util.List;

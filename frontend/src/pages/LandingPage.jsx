@@ -74,11 +74,11 @@ export default function LandingPage() {
       />
       <div className="add-employee-container" style={{ maxWidth: "400px" }}>
         <h2>PayrollPro Login</h2>
-        
+
         <form onSubmit={handleLogin} className="employee-form">
           <div className="form-section">
             <h3>Sign In</h3>
-            
+
             <div className="form-group">
               <label>Username *</label>
               <input
@@ -90,7 +90,7 @@ export default function LandingPage() {
                 disabled={isLoading}
               />
             </div>
-            
+
             <div className="form-group">
               <label>Password *</label>
               <input
@@ -104,14 +104,16 @@ export default function LandingPage() {
             </div>
 
             {error && (
-              <div style={{
-                color: "#ef4444",
-                backgroundColor: "#fef2f2",
-                padding: "0.75rem",
-                borderRadius: "0.5rem",
-                border: "1px solid #fecaca",
-                marginBottom: "1rem"
-              }}>
+              <div
+                style={{
+                  color: "#ef4444",
+                  backgroundColor: "#fef2f2",
+                  padding: "0.75rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid #fecaca",
+                  marginBottom: "1rem",
+                }}
+              >
                 {error}
               </div>
             )}

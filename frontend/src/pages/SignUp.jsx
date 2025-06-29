@@ -42,11 +42,11 @@ export default function SignUp() {
   return (
     <div className="add-employee-container" style={{ maxWidth: "400px" }}>
       <h2>Sign Up</h2>
-      
+
       <form onSubmit={handleSignUp} className="employee-form">
         <div className="form-section">
           <h3>Create Account</h3>
-          
+
           <div className="form-group">
             <label>Username *</label>
             <input
@@ -57,7 +57,7 @@ export default function SignUp() {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label>Password *</label>
             <input
@@ -68,7 +68,7 @@ export default function SignUp() {
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label>Confirm Password *</label>
             <input
@@ -81,27 +81,31 @@ export default function SignUp() {
           </div>
 
           {error && (
-            <div style={{
-              color: "#ef4444",
-              backgroundColor: "#fef2f2",
-              padding: "0.75rem",
-              borderRadius: "0.5rem",
-              border: "1px solid #fecaca",
-              marginBottom: "1rem"
-            }}>
+            <div
+              style={{
+                color: "#ef4444",
+                backgroundColor: "#fef2f2",
+                padding: "0.75rem",
+                borderRadius: "0.5rem",
+                border: "1px solid #fecaca",
+                marginBottom: "1rem",
+              }}
+            >
               {error}
             </div>
           )}
 
           {success && (
-            <div style={{
-              color: "#059669",
-              backgroundColor: "#f0fdf4",
-              padding: "0.75rem",
-              borderRadius: "0.5rem",
-              border: "1px solid #bbf7d0",
-              marginBottom: "1rem"
-            }}>
+            <div
+              style={{
+                color: "#059669",
+                backgroundColor: "#f0fdf4",
+                padding: "0.75rem",
+                borderRadius: "0.5rem",
+                border: "1px solid #bbf7d0",
+                marginBottom: "1rem",
+              }}
+            >
               {success}
             </div>
           )}
@@ -114,10 +118,7 @@ export default function SignUp() {
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn-submit"
-            >
+            <button type="submit" className="btn-submit">
               Sign Up
             </button>
           </div>
