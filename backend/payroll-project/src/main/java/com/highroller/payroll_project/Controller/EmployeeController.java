@@ -77,14 +77,12 @@ public class EmployeeController {
                         data.put("bloodType", emp.getBloodType());
                         data.put("religion", emp.getReligion());
 
-                        // Address data
-                        Map<String, String> address = new HashMap<>();
-                        address.put("house", emp.getAddressHouse());
-                        address.put("barangay", emp.getAddressBarangay());
-                        address.put("city", emp.getAddressCity());
-                        address.put("province", emp.getAddressProvince());
-                        address.put("zip", emp.getAddressZip());
-                        data.put("address", address);
+                        // Address data (flat structure to match frontend)
+                        data.put("addressHouse", emp.getAddressHouse());
+                        data.put("addressBarangay", emp.getAddressBarangay());
+                        data.put("addressCity", emp.getAddressCity());
+                        data.put("addressProvince", emp.getAddressProvince());
+                        data.put("addressZip", emp.getAddressZip());
 
                         data.put("image", emp.getImage());
                         return data;
@@ -205,14 +203,12 @@ public class EmployeeController {
             data.put("bloodType", emp.getBloodType());
             data.put("religion", emp.getReligion());
 
-            // Address data
-            Map<String, String> address = new HashMap<>();
-            address.put("house", emp.getAddressHouse());
-            address.put("barangay", emp.getAddressBarangay());
-            address.put("city", emp.getAddressCity());
-            address.put("province", emp.getAddressProvince());
-            address.put("zip", emp.getAddressZip());
-            data.put("address", address);
+            // Address data (flat structure to match frontend)
+            data.put("addressHouse", emp.getAddressHouse());
+            data.put("addressBarangay", emp.getAddressBarangay());
+            data.put("addressCity", emp.getAddressCity());
+            data.put("addressProvince", emp.getAddressProvince());
+            data.put("addressZip", emp.getAddressZip());
 
             data.put("image", emp.getImage());
 

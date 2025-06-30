@@ -305,6 +305,7 @@ function EditEmployeeModal({
   onUpdate,
 }) {
   const [reason, setReason] = useState("");
+
   const [departments] = useState({
     IT: [
       "Software Developer",
@@ -491,13 +492,18 @@ function EditEmployeeModal({
             <input
               type="text"
               value={employee.cellphone || ""}
-              onChange={(e) => handleInputChange("cellphone", e.target.value)}
+              onChange={(e) => {
+                // Only allow numbers like in AddEmployee form
+                const value = e.target.value.replace(/[^0-9]/g, "");
+                handleInputChange("cellphone", value);
+              }}
               style={{
                 width: "100%",
                 padding: "0.5rem",
                 borderRadius: "4px",
                 border: "1px solid #ccc",
               }}
+              maxLength={15}
             />
           </div>
 
@@ -660,13 +666,18 @@ function EditEmployeeModal({
               type="text"
               placeholder="ZIP Code"
               value={employee.addressZip || ""}
-              onChange={(e) => handleInputChange("addressZip", e.target.value)}
+              onChange={(e) => {
+                // Only allow numbers like in AddEmployee form
+                const value = e.target.value.replace(/[^0-9]/g, "");
+                handleInputChange("addressZip", value);
+              }}
               style={{
                 width: "100%",
                 padding: "0.5rem",
                 borderRadius: "4px",
                 border: "1px solid #ccc",
               }}
+              maxLength={10}
             />
           </div>
 

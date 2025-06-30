@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Address Debug Test</title>
+</head>
+<body>
+    <h1>Address Field Debug Test</h1>
+    <div id="output"></div>
+
+    <script>
+        // Simulate what might be coming from the backend
+        const employeeFromBackend1 = {
+            id: 1,
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@test.com",
+            addressHouse: "123 Main St",
+            addressBarangay: "Barangay Central",
+            addressCity: "Makati",
+            addressProvince: "Metro Manila",
+            addressZip: "1234"
+        };
+
+        const employeeFromBackend2 = {
+            id: 2,
+            firstName: "Jane",
+            lastName: "Smith",
+            email: "jane@test.com"
+            // Missing address fields
+        };
+
+        const employeeFromBackend3 = {
+            id: 3,
+            firstName: "Bob",
+            lastName: "Johnson",
+            email: "bob@test.com",
+            addressHouse: null,
+            addressBarangay: null,
+            addressCity: null,
+            addressProvince: null,
+            addressZip: null
+        };
+
+        function testAddressFields(employee, testName) {
+            console.log(`\n=== ${testName} ===`);
+            console.log("Employee object:", employee);
+            console.log("Address fields:", {
+                addressHouse: employee.addressHouse,
+                addressBarangay: employee.addressBarangay,
+                addressCity: employee.addressCity,
+                addressProvince: employee.addressProvince,
+                addressZip: employee.addressZip
+            });
+            
+            // Test what would happen in React input fields
+            console.log("React input values:", {
+                addressHouse: employee.addressHouse || "",
+                addressBarangay: employee.addressBarangay || "",
+                addressCity: employee.addressCity || "",
+                addressProvince: employee.addressProvince || "",
+                addressZip: employee.addressZip || ""
+            });
+        }
+
+        testAddressFields(employeeFromBackend1, "Employee with address data");
+        testAddressFields(employeeFromBackend2, "Employee missing address fields");
+        testAddressFields(employeeFromBackend3, "Employee with null address fields");
+
+        // Display in page
+        document.getElementById('output').innerHTML = `
+            <h2>Test Results</h2>
+            <p>Check the browser console for detailed output.</p>
+            <p>This test simulates different scenarios of address data from the backend.</p>
+        `;
+    </script>
+</body>
+</html>

@@ -185,13 +185,33 @@ export default function AddEmployee() {
 
               <div className="form-group">
                 <label>Suffix</label>
-                <input
-                  type="text"
+                <select
                   name="suffix"
                   value={form.suffix}
                   onChange={handleInputChange}
-                  placeholder="Jr., Sr., III, etc."
-                />
+                >
+                  <option value="">Select Suffix</option>
+                  <option value="Jr.">Jr.</option>
+                  <option value="Sr.">Sr.</option>
+                  <option value="II">II</option>
+                  <option value="III">III</option>
+                  <option value="IV">IV</option>
+                  <option value="V">V</option>
+                  <option value="MD">MD</option>
+                  <option value="PhD">PhD</option>
+                  <option value="CPA">CPA</option>
+                  <option value="Esq.">Esq.</option>
+                  <option value="DDS">DDS</option>
+                  <option value="DVM">DVM</option>
+                  <option value="RN">RN</option>
+                  <option value="J.D.">J.D.</option>
+                  <option value="M.D.">M.D.</option>
+                  <option value="D.D.S.">D.D.S.</option>
+                  <option value="D.O.">D.O.</option>
+                  <option value="D.C.">D.C.</option>
+                  <option value="Ed.D.">Ed.D.</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
             </div>
 
@@ -216,8 +236,13 @@ export default function AddEmployee() {
                 type="tel"
                 name="cellphone"
                 value={form.cellphone}
-                onChange={handleInputChange}
-                placeholder="+1234567890"
+                onChange={(e) => {
+                  // Only allow numbers
+                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  handleInputChange({ target: { name: "cellphone", value } });
+                }}
+                placeholder="e.g. 09171234567"
+                maxLength={15}
               />
             </div>
 
@@ -230,21 +255,6 @@ export default function AddEmployee() {
                   value={form.birthday}
                   onChange={handleInputChange}
                 />
-              </div>
-
-              <div className="form-group">
-                <label>Date Hired *</label>
-                <input
-                  type="date"
-                  name="dateHired"
-                  value={form.dateHired}
-                  onChange={handleInputChange}
-                  className={errors.dateHired ? "error" : ""}
-                  required
-                />
-                {errors.dateHired && (
-                  <span className="error-text">{errors.dateHired}</span>
-                )}
               </div>
             </div>
           </div>
@@ -299,6 +309,20 @@ export default function AddEmployee() {
                   <span className="info-text">
                     Please select a department first
                   </span>
+                )}
+              </div>
+              <div className="form-group">
+                <label>Date Hired *</label>
+                <input
+                  type="date"
+                  name="dateHired"
+                  value={form.dateHired}
+                  onChange={handleInputChange}
+                  className={errors.dateHired ? "error" : ""}
+                  required
+                />
+                {errors.dateHired && (
+                  <span className="error-text">{errors.dateHired}</span>
                 )}
               </div>
             </div>
@@ -363,7 +387,14 @@ export default function AddEmployee() {
                   type="text"
                   name="addressZip"
                   value={form.addressZip}
-                  onChange={handleInputChange}
+                  onChange={(e) => {
+                    // Only allow numbers
+                    const value = e.target.value.replace(/[^0-9]/g, "");
+                    handleInputChange({
+                      target: { name: "addressZip", value },
+                    });
+                  }}
+                  maxLength={10}
                 />
               </div>
             </div>
@@ -376,12 +407,39 @@ export default function AddEmployee() {
             <div className="form-row">
               <div className="form-group">
                 <label>Religion</label>
-                <input
-                  type="text"
+                <select
                   name="religion"
                   value={form.religion}
                   onChange={handleInputChange}
-                />
+                >
+                  <option value="">Select Religion</option>
+                  <option value="Christianity">Christianity</option>
+                  <option value="Roman Catholic">Roman Catholic</option>
+                  <option value="Islam">Islam</option>
+                  <option value="Secular/Atheist/Agnostic">
+                    Secular/Atheist/Agnostic
+                  </option>
+                  <option value="Hinduism">Hinduism</option>
+                  <option value="Buddhism">Buddhism</option>
+                  <option value="Chinese traditional religion">
+                    Chinese traditional religion
+                  </option>
+                  <option value="Ethnic religions">Ethnic religions</option>
+                  <option value="African traditional religions">
+                    African traditional religions
+                  </option>
+                  <option value="Sikhism">Sikhism</option>
+                  <option value="Spiritism">Spiritism</option>
+                  <option value="Judaism">Judaism</option>
+                  <option value="Baháʼí">Baháʼí</option>
+                  <option value="Jainism">Jainism</option>
+                  <option value="Shinto">Shinto</option>
+                  <option value="Cao Dai">Cao Dai</option>
+                  <option value="Zoroastrianism">Zoroastrianism</option>
+                  <option value="Tenrikyo">Tenrikyo</option>
+                  <option value="Animism">Animism</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
 
               <div className="form-group">
