@@ -4,7 +4,6 @@ import { AdminNavBar, HRNavBar } from "../components/NavBar";
 import Button from "../components/Button";
 import SalaryCard from "../components/SalaryCard";
 import "./Payroll.css";
-import "./AddEmployee.css";
 
 export default function Payroll() {
   const { role } = useRole();

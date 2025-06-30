@@ -76,73 +76,30 @@ export default function TrackTickets() {
   return (
     <div>
       <HRNavBar />
-      <div
-        className="track-tickets-container"
-        style={{
-          background: "#fff",
-          borderRadius: "1.5rem",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-          minWidth: "50vw",
-          minHeight: "80vh",
-          margin: "4.5rem auto 0 auto",
-          padding: "2.5rem 2rem",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
+      <div className="track-tickets-container">
         <h2>Track My Tickets</h2>
         {error && (
-          <div
-            style={{
-              color: "#e11d48",
-              backgroundColor: "#ffe4e6",
-              padding: "0.75rem",
-              borderRadius: "0.5rem",
-              marginBottom: "1rem",
-              width: "100%",
-              textAlign: "center",
-            }}
-          >
+          <div className="error-alert">
             {error}
-            <button
-              onClick={() => setError("")}
-              style={{
-                marginLeft: "1rem",
-                background: "none",
-                border: "none",
-                color: "#e11d48",
-                cursor: "pointer",
-              }}
-            >
+            <button onClick={() => setError("")} className="error-close-btn">
               ×
             </button>
           </div>
         )}
         {isLoading ? (
-          <div style={{ textAlign: "center", padding: "2rem" }}>
-            Loading your tickets...
-          </div>
+          <div className="loading-message">Loading your tickets...</div>
         ) : myTickets.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "2rem" }}>
+          <div className="empty-state">
             <p>You haven't submitted any tickets yet.</p>
             <button
               onClick={() => navigate("/issue-ticket")}
-              style={{
-                backgroundColor: "#4f8cff",
-                color: "white",
-                padding: "0.75rem 1.5rem",
-                borderRadius: "0.5rem",
-                border: "none",
-                cursor: "pointer",
-                marginTop: "1rem",
-              }}
+              className="btn-primary"
             >
               Create Your First Ticket
             </button>
           </div>
         ) : (
-          <div style={{ width: "100%", marginTop: "1rem" }}>
+          <div className="tickets-list">
             {myTickets.map((ticket) => (
               <TicketCard
                 key={ticket.id}

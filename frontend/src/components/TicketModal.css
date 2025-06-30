@@ -1,3 +1,4 @@
+/* Ticket Modal Component - Alfii-inspired */
 .ticket-modal-overlay {
   position: fixed;
   top: 0;
@@ -9,40 +10,46 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(4px);
 }
 
 .ticket-modal {
-  background: white;
-  border-radius: 1rem;
-  padding: 2rem;
-  max-width: 600px;
+  background: var(--surface-color);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem;
+  max-width: 700px;
   width: 90%;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
 }
 
 .close-button {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: none;
-  border: none;
-  font-size: 2rem;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: var(--surface-color);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 1.25rem;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--text-secondary);
   line-height: 1;
-  padding: 0;
-  width: 2rem;
-  height: 2rem;
+  padding: 0.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
 
 .close-button:hover {
-  color: #374151;
+  color: var(--text-primary);
+  border-color: var(--danger-color);
+  background: #fee2e2;
 }
 
 .modal-header {

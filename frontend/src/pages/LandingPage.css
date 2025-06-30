@@ -1,29 +1,199 @@
+/* Modern Alfii-inspired Landing Page Styles */
+.landing-page {
+  background: var(--background-color);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
 .login-container {
-  background: #fff;
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-  max-width: 350px;
-  margin: 3rem auto;
-  padding: 2.5rem 2rem;
+  background: var(--surface-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+  max-width: 400px;
+  width: 100%;
+  padding: 2.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
+.login-container h2 {
+  color: var(--text-primary);
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.login-container p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
   width: 100%;
 }
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
 .login-form input {
-  padding: 0.7rem 1rem;
-  border-radius: 1rem;
-  border: 1.5px solid #4f8cff;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-color);
   font-size: 1rem;
+  transition: all 0.2s ease;
+  background: var(--surface-color);
+  color: var(--text-primary);
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
+}
+
+.login-form input.error {
+  border-color: var(--danger-color);
+  box-shadow: 0 0 0 3px rgb(239 68 68 / 0.1);
 }
 
 .error {
-  color: #e11d48;
-  margin-top: 0.5rem;
-  font-size: 0.95rem;
+  color: var(--danger-color);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.login-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.login-button {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.login-button:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.login-button:disabled {
+  background: var(--secondary-color);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.signup-link {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.signup-link a {
+  color: var(--primary-color);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.signup-link a:hover {
+  color: var(--primary-hover);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.btn-primary, .btn-secondary {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+  background: var(--surface-color);
+  color: var(--text-secondary);
+  border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: var(--secondary-color);
+  color: var(--text-primary);
+}
+
+.btn-primary:disabled, .btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.error-alert {
+  background: #fee2e2;
+  border: 2px solid #fecaca;
+  color: #991b1b;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .landing-page {
+    padding: 1rem;
+  }
+  
+  .login-container {
+    padding: 2rem;
+  }
 }

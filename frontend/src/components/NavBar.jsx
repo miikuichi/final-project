@@ -6,9 +6,13 @@ import "./NavBar.css";
 export function LoginNavBar({ onHome, onIssueTicket }) {
   return (
     <nav className="navbar login-navbar">
-      <div className="navbar-logo">PayrollPro</div>
-      <button onClick={onHome}>Home</button>
-      <button onClick={onIssueTicket}>Issue Ticket</button>
+      <div className="navbar-left">
+        <div className="navbar-logo">PayrollPro</div>
+      </div>
+      <div className="navbar-nav">
+        <button onClick={onHome}>Home</button>
+        <button onClick={onIssueTicket}>Issue Ticket</button>
+      </div>
     </nav>
   );
 }
@@ -52,9 +56,17 @@ export function AdminNavBar({ onHome, onLogout }) {
 
   return (
     <nav className="navbar admin-navbar">
-      <div className="navbar-logo">PayrollPro</div>
-      <button onClick={handleHome}>Home</button>
-      {isLoggedIn && <button onClick={handleLogout}>Log out</button>}
+      <div className="navbar-left">
+        <div className="navbar-logo">PayrollPro</div>
+      </div>
+      <div className="navbar-nav">
+        <button onClick={handleHome}>Home</button>
+        {isLoggedIn && (
+          <button className="logout-btn" onClick={handleLogout}>
+            Log out
+          </button>
+        )}
+      </div>
     </nav>
   );
 }
@@ -118,10 +130,18 @@ export function HRNavBar({ onHome, onIssueTicket, onLogout }) {
 
   return (
     <nav className="navbar hr-navbar">
-      <div className="navbar-logo">PayrollPro</div>
-      <button onClick={handleHome}>Home</button>
-      <button onClick={handleIssueTicket}>Issue Ticket</button>
-      {isLoggedIn && <button onClick={handleLogout}>Log out</button>}
+      <div className="navbar-left">
+        <div className="navbar-logo">PayrollPro</div>
+      </div>
+      <div className="navbar-nav">
+        <button onClick={handleHome}>Home</button>
+        <button onClick={handleIssueTicket}>Issue Ticket</button>
+        {isLoggedIn && (
+          <button className="logout-btn" onClick={handleLogout}>
+            Log out
+          </button>
+        )}
+      </div>
     </nav>
   );
 }

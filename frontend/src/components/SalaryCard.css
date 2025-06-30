@@ -1,36 +1,50 @@
+/* Salary Card Component - Alfii-inspired */
 .salary-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  padding: 1rem;
-  margin: 0.5rem 0;
+  background: var(--surface-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--border-color);
+  padding: 1.5rem;
+  margin: 1rem 0;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .salary-card:hover {
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
 }
 
 .salary-period {
   display: flex;
   justify-content: space-between;
-  font-weight: bold;
+  align-items: center;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1.125rem;
 }
 
 .salary-details {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--border-color);
 }
 
 .hours-row {
   display: flex;
   justify-content: space-between;
-  margin: 0.5rem 0;
-  color: #666;
+  align-items: center;
+  margin: 0.75rem 0;
+  color: var(--text-secondary);
+}
+
+.hours-row strong {
+  color: var(--text-primary);
 }
 
 .salary-card.expanded {
   transform: scale(1.02);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-color);
 }
