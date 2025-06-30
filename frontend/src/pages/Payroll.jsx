@@ -192,7 +192,9 @@ export default function Payroll() {
         // Try to get error message from response
         try {
           const errorData = await response.json();
-          setErrors({ submit: errorData.error || "Failed to save salary period" });
+          setErrors({
+            submit: errorData.error || "Failed to save salary period",
+          });
         } catch {
           setErrors({ submit: "Failed to save salary period" });
         }
@@ -242,32 +244,55 @@ export default function Payroll() {
     if (!salaryPeriod.to) {
       newErrors.periodTo = "End date is required";
     }
-    if (salaryPeriod.from && salaryPeriod.to && new Date(salaryPeriod.from) >= new Date(salaryPeriod.to)) {
+    if (
+      salaryPeriod.from &&
+      salaryPeriod.to &&
+      new Date(salaryPeriod.from) >= new Date(salaryPeriod.to)
+    ) {
       newErrors.periodTo = "End date must be after start date";
     }
 
     // Validate at least one hour type is entered
-    const hasHours = workHours.regularHours || workHours.overtimeHours || 
-                    workHours.holidayHours || workHours.nightDiffHours;
+    const hasHours =
+      workHours.regularHours ||
+      workHours.overtimeHours ||
+      workHours.holidayHours ||
+      workHours.nightDiffHours;
     if (!hasHours) {
       newErrors.hours = "At least one hour type must be entered";
     }
 
     // Validate individual hour fields
     if (workHours.regularHours) {
-      const error = validateHours(workHours.regularHours, "Regular hours", MAX_REGULAR_HOURS);
+      const error = validateHours(
+        workHours.regularHours,
+        "Regular hours",
+        MAX_REGULAR_HOURS
+      );
       if (error) newErrors.regularHours = error;
     }
     if (workHours.overtimeHours) {
-      const error = validateHours(workHours.overtimeHours, "Overtime hours", MAX_OVERTIME_HOURS);
+      const error = validateHours(
+        workHours.overtimeHours,
+        "Overtime hours",
+        MAX_OVERTIME_HOURS
+      );
       if (error) newErrors.overtimeHours = error;
     }
     if (workHours.holidayHours) {
-      const error = validateHours(workHours.holidayHours, "Holiday hours", MAX_HOLIDAY_HOURS);
+      const error = validateHours(
+        workHours.holidayHours,
+        "Holiday hours",
+        MAX_HOLIDAY_HOURS
+      );
       if (error) newErrors.holidayHours = error;
     }
     if (workHours.nightDiffHours) {
-      const error = validateHours(workHours.nightDiffHours, "Night differential hours", MAX_NIGHT_DIFF_HOURS);
+      const error = validateHours(
+        workHours.nightDiffHours,
+        "Night differential hours",
+        MAX_NIGHT_DIFF_HOURS
+      );
       if (error) newErrors.nightDiffHours = error;
     }
 
@@ -276,11 +301,11 @@ export default function Payroll() {
   };
 
   const handleHoursChange = (field, value) => {
-    setWorkHours(prev => ({ ...prev, [field]: value }));
-    
+    setWorkHours((prev) => ({ ...prev, [field]: value }));
+
     // Clear specific error when user starts typing
     if (errors[field]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[field];
         if (errors.hours) delete newErrors.hours; // Clear general hours error
@@ -435,7 +460,11 @@ export default function Payroll() {
         <div className="payroll-right">
           {selected && (
             <div className="payroll-columns">
-              <div className={`payroll-details${calculatedSalary ? ' expanded' : ''}`}>
+              <div
+                className={`payroll-details${
+                  calculatedSalary ? " expanded" : ""
+                }`}
+              >
                 <div className="form-section">
                   <h3>Salary Computation</h3>
 
@@ -455,47 +484,53 @@ export default function Payroll() {
                       <input
                         type="date"
                         value={salaryPeriod.from}
-                        max={new Date().toISOString().split('T')[0]}
+                        max={new Date().toISOString().split("T")[0]}
                         onChange={(e) => {
                           setSalaryPeriod((prev) => ({
                             ...prev,
                             from: e.target.value,
                           }));
                           if (errors.periodFrom) {
-                            setErrors(prev => {
+                            setErrors((prev) => {
                               const newErrors = { ...prev };
                               delete newErrors.periodFrom;
                               return newErrors;
                             });
                           }
                         }}
-                        className={errors.periodFrom ? 'error' : ''}
+                        className={errors.periodFrom ? "error" : ""}
                         required
                       />
-                      {errors.periodFrom && <span className="error-message">{errors.periodFrom}</span>}
+                      {errors.periodFrom && (
+                        <span className="error-message">
+                          {errors.periodFrom}
+                        </span>
+                      )}
                     </div>
                     <div className="form-group">
                       <label>Period To</label>
                       <input
                         type="date"
                         value={salaryPeriod.to}
-                        max={new Date().toISOString().split('T')[0]}
+                        max={new Date().toISOString().split("T")[0]}
                         onChange={(e) => {
                           setSalaryPeriod((prev) => ({
                             ...prev,
                             to: e.target.value,
                           }));
                           if (errors.periodTo) {
-                            setErrors(prev => {
+                            setErrors((prev) => {
                               const newErrors = { ...prev };
                               delete newErrors.periodTo;
                               return newErrors;
                             });
                           }
                         }}
-                        className={errors.periodTo ? 'error' : ''}
+                        className={errors.periodTo ? "error" : ""}
                       />
-                      {errors.periodTo && <span className="error-message">{errors.periodTo}</span>}
+                      {errors.periodTo && (
+                        <span className="error-message">{errors.periodTo}</span>
+                      )}
                     </div>
                   </div>
 
@@ -508,11 +543,17 @@ export default function Payroll() {
                         max={MAX_REGULAR_HOURS}
                         step="0.1"
                         value={workHours.regularHours}
-                        onChange={(e) => handleHoursChange('regularHours', e.target.value)}
-                        className={errors.regularHours ? 'error' : ''}
+                        onChange={(e) =>
+                          handleHoursChange("regularHours", e.target.value)
+                        }
+                        className={errors.regularHours ? "error" : ""}
                         placeholder="0.0"
                       />
-                      {errors.regularHours && <span className="error-message">{errors.regularHours}</span>}
+                      {errors.regularHours && (
+                        <span className="error-message">
+                          {errors.regularHours}
+                        </span>
+                      )}
                     </div>
                     <div className="form-group">
                       <label>Overtime Hours (max {MAX_OVERTIME_HOURS})</label>
@@ -522,11 +563,17 @@ export default function Payroll() {
                         max={MAX_OVERTIME_HOURS}
                         step="0.1"
                         value={workHours.overtimeHours}
-                        onChange={(e) => handleHoursChange('overtimeHours', e.target.value)}
-                        className={errors.overtimeHours ? 'error' : ''}
+                        onChange={(e) =>
+                          handleHoursChange("overtimeHours", e.target.value)
+                        }
+                        className={errors.overtimeHours ? "error" : ""}
                         placeholder="0.0"
                       />
-                      {errors.overtimeHours && <span className="error-message">{errors.overtimeHours}</span>}
+                      {errors.overtimeHours && (
+                        <span className="error-message">
+                          {errors.overtimeHours}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -539,36 +586,56 @@ export default function Payroll() {
                         max={MAX_HOLIDAY_HOURS}
                         step="0.1"
                         value={workHours.holidayHours}
-                        onChange={(e) => handleHoursChange('holidayHours', e.target.value)}
-                        className={errors.holidayHours ? 'error' : ''}
+                        onChange={(e) =>
+                          handleHoursChange("holidayHours", e.target.value)
+                        }
+                        className={errors.holidayHours ? "error" : ""}
                         placeholder="0.0"
                       />
-                      {errors.holidayHours && <span className="error-message">{errors.holidayHours}</span>}
+                      {errors.holidayHours && (
+                        <span className="error-message">
+                          {errors.holidayHours}
+                        </span>
+                      )}
                     </div>
                     <div className="form-group">
-                      <label>Night Diff Hours (max {MAX_NIGHT_DIFF_HOURS})</label>
+                      <label>
+                        Night Diff Hours (max {MAX_NIGHT_DIFF_HOURS})
+                      </label>
                       <input
                         type="number"
                         min="0"
                         max={MAX_NIGHT_DIFF_HOURS}
                         step="0.1"
                         value={workHours.nightDiffHours}
-                        onChange={(e) => handleHoursChange('nightDiffHours', e.target.value)}
-                        className={errors.nightDiffHours ? 'error' : ''}
+                        onChange={(e) =>
+                          handleHoursChange("nightDiffHours", e.target.value)
+                        }
+                        className={errors.nightDiffHours ? "error" : ""}
                         placeholder="0.0"
                       />
-                      {errors.nightDiffHours && <span className="error-message">{errors.nightDiffHours}</span>}
+                      {errors.nightDiffHours && (
+                        <span className="error-message">
+                          {errors.nightDiffHours}
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   <div className="form-actions">
-                    {errors.hours && <span className="error-message">{errors.hours}</span>}
-                    {errors.submit && <span className="error-message">{errors.submit}</span>}
+                    {errors.hours && (
+                      <span className="error-message">{errors.hours}</span>
+                    )}
+                    {errors.submit && (
+                      <span className="error-message">{errors.submit}</span>
+                    )}
                     <button
                       type="button"
                       className="btn-submit"
                       onClick={handleSubmit}
-                      disabled={isSubmitting || !salaryPeriod.from || !salaryPeriod.to}
+                      disabled={
+                        isSubmitting || !salaryPeriod.from || !salaryPeriod.to
+                      }
                       style={{ width: "100%" }}
                     >
                       {isSubmitting ? "Submitting..." : "Submit Salary Period"}

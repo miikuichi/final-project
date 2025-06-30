@@ -20,10 +20,10 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
+
     @Autowired
     private ValidationUtils validationUtils;
 
@@ -33,32 +33,26 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody UserEntity user) {
         try {
-            // Input validation and sanitization
             if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Username is required"));
             }
-            
+
             if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Password is required"));
             }
-            
-            // Sanitize inputs
+
             user.setUsername(validationUtils.sanitizeInput(user.getUsername()));
-            
-            // Validate password strength
+
             if (!validationUtils.isValidPassword(user.getPassword())) {
                 return ResponseEntity.badRequest().body(Map.of("error", validationUtils.getPasswordRequirements()));
             }
-            
-            // Check if username already exists
+
             if (userRepository.findByUsername(user.getUsername()).isPresent()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Username already exists"));
             }
 
-            // Hash the password before saving
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-            
-            // Set role to HR by default
+
             user.setRole(ROLE_HR);
 
             UserEntity saved = userRepository.save(user);
@@ -75,28 +69,24 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserEntity user, HttpSession session) {
         try {
-            // Input validation and sanitization
             if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Username is required"));
             }
-            
+
             if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Password is required"));
             }
-            
-            // Sanitize username input
+
             String sanitizedUsername = validationUtils.sanitizeInput(user.getUsername());
-            
+
             Optional<UserEntity> found = userRepository.findByUsername(sanitizedUsername);
             if (found.isPresent() && passwordEncoder.matches(user.getPassword(), found.get().getPassword())) {
                 UserEntity loggedInUser = found.get();
 
-                // Store user info in session
                 session.setAttribute("userId", loggedInUser.getId());
                 session.setAttribute("username", loggedInUser.getUsername());
                 session.setAttribute("role", loggedInUser.getRole());
 
-                // Create response with user details
                 Map<String, Object> response = new HashMap<>();
                 response.put("id", loggedInUser.getId());
                 response.put("username", loggedInUser.getUsername());

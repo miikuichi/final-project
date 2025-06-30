@@ -18,7 +18,7 @@ public class SalaryPeriodController {
 
     @Autowired
     private SalaryPeriodRepository salaryPeriodRepository;
-    
+
     @Autowired
     private ValidationUtils validationUtils;
 
@@ -26,7 +26,7 @@ public class SalaryPeriodController {
     public ResponseEntity<?> createSalaryPeriod(@RequestBody Map<String, Object> request) {
         try {
             // INPUT VALIDATION
-            
+
             // Validate required fields
             if (request.get("employeeId") == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Employee ID is required"));
@@ -34,7 +34,7 @@ public class SalaryPeriodController {
             if (request.get("monthlyRate") == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Monthly rate is required"));
             }
-            
+
             SalaryPeriodEntity salaryPeriod = new SalaryPeriodEntity();
 
             salaryPeriod.setEmployeeId(Long.valueOf(request.get("employeeId").toString()));
@@ -46,35 +46,39 @@ public class SalaryPeriodController {
             if (request.get("regularHours") != null) {
                 Double regularHours = Double.valueOf(request.get("regularHours").toString());
                 if (!validationUtils.isValidRegularHours(regularHours)) {
-                    return ResponseEntity.badRequest().body(Map.of("error", 
-                        "Regular hours must be between 0 and " + ValidationUtils.MAX_REGULAR_HOURS_MONTHLY + " per month"));
+                    return ResponseEntity.badRequest().body(Map.of("error",
+                            "Regular hours must be between 0 and " + ValidationUtils.MAX_REGULAR_HOURS_MONTHLY
+                                    + " per month"));
                 }
                 salaryPeriod.setRegularHours(regularHours);
             }
-            
+
             if (request.get("overtimeHours") != null) {
                 Double overtimeHours = Double.valueOf(request.get("overtimeHours").toString());
                 if (!validationUtils.isValidOvertimeHours(overtimeHours)) {
-                    return ResponseEntity.badRequest().body(Map.of("error", 
-                        "Overtime hours must be between 0 and " + ValidationUtils.MAX_OVERTIME_HOURS_MONTHLY + " per month"));
+                    return ResponseEntity.badRequest().body(Map.of("error",
+                            "Overtime hours must be between 0 and " + ValidationUtils.MAX_OVERTIME_HOURS_MONTHLY
+                                    + " per month"));
                 }
                 salaryPeriod.setOvertimeHours(overtimeHours);
             }
-            
+
             if (request.get("holidayHours") != null) {
                 Double holidayHours = Double.valueOf(request.get("holidayHours").toString());
                 if (!validationUtils.isValidHolidayHours(holidayHours)) {
-                    return ResponseEntity.badRequest().body(Map.of("error", 
-                        "Holiday hours must be between 0 and " + ValidationUtils.MAX_HOLIDAY_HOURS_MONTHLY + " per month"));
+                    return ResponseEntity.badRequest().body(Map.of("error",
+                            "Holiday hours must be between 0 and " + ValidationUtils.MAX_HOLIDAY_HOURS_MONTHLY
+                                    + " per month"));
                 }
                 salaryPeriod.setHolidayHours(holidayHours);
             }
-            
+
             if (request.get("nightDiffHours") != null) {
                 Double nightDiffHours = Double.valueOf(request.get("nightDiffHours").toString());
                 if (!validationUtils.isValidNightDiffHours(nightDiffHours)) {
-                    return ResponseEntity.badRequest().body(Map.of("error", 
-                        "Night differential hours must be between 0 and " + ValidationUtils.MAX_NIGHT_DIFF_HOURS_MONTHLY + " per month"));
+                    return ResponseEntity.badRequest().body(Map.of("error",
+                            "Night differential hours must be between 0 and "
+                                    + ValidationUtils.MAX_NIGHT_DIFF_HOURS_MONTHLY + " per month"));
                 }
                 salaryPeriod.setNightDiffHours(nightDiffHours);
             }

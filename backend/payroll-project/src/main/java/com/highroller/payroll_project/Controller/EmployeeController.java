@@ -19,13 +19,13 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeRepository employeeRepository;
-    
+
     @Autowired
     private AddressValidationService addressValidationService;
-    
+
     @Autowired
     private ValidationUtils validationUtils;
-    
+
     // Hardcoded department options
     private final Map<String, List<String>> DEPARTMENT_POSITIONS = Map.of(
             "IT", Arrays.asList("Software Developer", "System Administrator", "IT Support", "DevOps Engineer"),
@@ -127,7 +127,7 @@ public class EmployeeController {
             System.out.println("Received employee data: " + employeeData);
 
             // INPUT VALIDATION AND SANITIZATION
-            
+
             // Validate required fields
             if (employeeData.get("firstName") == null || employeeData.get("firstName").trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "First name is required"));
@@ -138,12 +138,12 @@ public class EmployeeController {
             if (employeeData.get("email") == null || employeeData.get("email").trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email is required"));
             }
-            
+
             // Validate email format
             if (!validationUtils.isValidEmail(employeeData.get("email"))) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Invalid email format"));
             }
-            
+
             // Validate phone number if provided
             if (!validationUtils.isValidPhone(employeeData.get("cellphone"))) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Invalid phone number format"));
@@ -163,22 +163,22 @@ public class EmployeeController {
             try {
                 if (employeeData.get("birthday") != null && !employeeData.get("birthday").isEmpty()) {
                     LocalDate birthday = LocalDate.parse(employeeData.get("birthday"));
-                    
+
                     // Validate birthday is not in the future
                     if (!validationUtils.isDateNotInFuture(birthday)) {
                         return ResponseEntity.badRequest().body(Map.of("error", "Birthday cannot be in the future"));
                     }
-                    
+
                     employee.setBirthday(birthday);
                 }
                 if (employeeData.get("dateHired") != null && !employeeData.get("dateHired").isEmpty()) {
                     LocalDate dateHired = LocalDate.parse(employeeData.get("dateHired"));
-                    
+
                     // Validate date hired is not in the future
                     if (!validationUtils.isDateNotInFuture(dateHired)) {
                         return ResponseEntity.badRequest().body(Map.of("error", "Date hired cannot be in the future"));
                     }
-                    
+
                     employee.setDateHired(dateHired);
                 }
             } catch (DateTimeParseException e) {
@@ -210,7 +210,7 @@ public class EmployeeController {
             String addressCity = validationUtils.sanitizeInput(employeeData.get("addressCity"));
             String addressProvince = validationUtils.sanitizeInput(employeeData.get("addressProvince"));
             String addressZip = validationUtils.sanitizeInput(employeeData.get("addressZip"));
-            
+
             // Validate address using Address API
             if (addressHouse != null && addressCity != null && addressProvince != null && addressZip != null) {
                 if (!addressValidationService.validateAddress(addressHouse, addressCity, addressProvince, addressZip)) {

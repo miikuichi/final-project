@@ -72,7 +72,7 @@ export default function AddEmployee() {
 
   const validateForm = () => {
     const newErrors = {};
-    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
 
     // Required fields
     if (!form.firstName.trim()) newErrors.firstName = "First name is required";
@@ -87,10 +87,14 @@ export default function AddEmployee() {
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = "Please enter a valid email address";
     }
-    
+
     // Phone number validation (basic US format)
-    if (form.cellphone && !/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.test(form.cellphone)) {
-      newErrors.cellphone = "Please enter a valid phone number (e.g., 555-123-4567)";
+    if (
+      form.cellphone &&
+      !/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.test(form.cellphone)
+    ) {
+      newErrors.cellphone =
+        "Please enter a valid phone number (e.g., 555-123-4567)";
     }
 
     // Date validation - birthday cannot be in the future
@@ -102,12 +106,18 @@ export default function AddEmployee() {
     if (form.dateHired && form.dateHired > today) {
       newErrors.dateHired = "Date hired cannot be in the future";
     }
-    
+
     // Address validation (basic)
-    if (form.addressHouse && form.addressCity && form.addressProvince && form.addressZip) {
+    if (
+      form.addressHouse &&
+      form.addressCity &&
+      form.addressProvince &&
+      form.addressZip
+    ) {
       // ZIP code validation (US format)
       if (!/^\d{5}(-\d{4})?$/.test(form.addressZip)) {
-        newErrors.addressZip = "Please enter a valid ZIP code (e.g., 12345 or 12345-6789)";
+        newErrors.addressZip =
+          "Please enter a valid ZIP code (e.g., 12345 or 12345-6789)";
       }
     }
 
@@ -278,7 +288,7 @@ export default function AddEmployee() {
                   name="birthday"
                   value={form.birthday}
                   onChange={handleInputChange}
-                  max={new Date().toISOString().split('T')[0]} // Prevent future dates
+                  max={new Date().toISOString().split("T")[0]} // Prevent future dates
                   className={errors.birthday ? "error" : ""}
                 />
                 {errors.birthday && (

@@ -21,25 +21,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Disable default security (we'll handle authentication manually)
-            .authorizeHttpRequests(authz -> authz.anyRequest().permitAll())
-            
-            // CORS configuration
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            
-            // CSRF protection (disabled for API usage, but you can enable for forms)
-            .csrf(csrf -> csrf.disable())
-            
-            // Security Headers for Spring Security 6.x
-            .headers(headers -> headers
-                .frameOptions(frame -> frame.deny()) // X-Frame-Options: DENY
-                .contentTypeOptions(contentType -> {}) // X-Content-Type-Options: nosniff
-                .httpStrictTransportSecurity(hstsConfig -> hstsConfig
-                    .maxAgeInSeconds(31536000)
-                    .includeSubDomains(true)) // HSTS
-                .referrerPolicy(referrer -> referrer.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
-            );
-            
+                // Disable default security (we'll handle authentication manually)
+                .authorizeHttpRequests(authz -> authz.anyRequest().permitAll())
+
+                // CORS configuration
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // CSRF protection (disabled for API usage, but you can enable for forms)
+                .csrf(csrf -> csrf.disable())
+
+                // Security Headers for Spring Security 6.x
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.deny()) // X-Frame-Options: DENY
+                        .contentTypeOptions(contentType -> {
+                        }) // X-Content-Type-Options: nosniff
+                        .httpStrictTransportSecurity(hstsConfig -> hstsConfig
+                                .maxAgeInSeconds(31536000)
+                                .includeSubDomains(true)) // HSTS
+                        .referrerPolicy(referrer -> referrer
+                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)));
+
         return http.build();
     }
 
@@ -50,7 +51,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
