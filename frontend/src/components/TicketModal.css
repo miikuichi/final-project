@@ -1,11 +1,11 @@
-/* Ticket Modal Component - Alfii-inspired */
+/* Ticket Modal Component - Earthy Modern */
 .ticket-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(62, 39, 35, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,9 +15,10 @@
 
 .ticket-modal {
   background: var(--surface-color);
+  background-image: linear-gradient(135deg, var(--surface-color) 0%, #efebe7 100%);
   border-radius: var(--radius-xl);
-  padding: 2.5rem;
-  max-width: 700px;
+  padding: 1.5rem;
+  max-width: 650px;
   width: 90%;
   max-height: 85vh;
   overflow-y: auto;
@@ -28,18 +29,18 @@
 
 .close-button {
   position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
+  top: 1rem;
+  right: 1rem;
   background: var(--surface-color);
   border: 2px solid var(--border-color);
   border-radius: var(--radius-md);
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   cursor: pointer;
   color: var(--text-secondary);
   line-height: 1;
-  padding: 0.5rem;
-  width: 2.5rem;
-  height: 2.5rem;
+  padding: 0.375rem;
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,46 +50,47 @@
 .close-button:hover {
   color: var(--text-primary);
   border-color: var(--danger-color);
-  background: #fee2e2;
+  background: #f9e6d3;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  margin-right: 2rem;
+  margin-bottom: 1rem;
+  margin-right: 1.5rem;
 }
 
 .modal-header h2 {
   margin: 0;
-  color: #1f2937;
+  color: var(--text-primary);
+  font-size: 1.25rem;
 }
 
 .status-badge {
-  padding: 0.5rem 1rem;
+  padding: 0.375rem 0.75rem;
   border-radius: 0.5rem;
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
 }
 
 .status-badge.under-process {
-  background-color: #f59e0b;
+  background-color: var(--warning-color);
   color: white;
 }
 
 .status-badge.high-priority {
-  background-color: #ef4444;
+  background-color: var(--danger-color);
   color: white;
 }
 
 .status-badge.issue-fixed {
-  background-color: #10b981;
+  background-color: var(--success-color);
   color: white;
 }
 
 .modal-content {
-  color: #374151;
+  color: var(--text-primary);
 }
 
 .ticket-info p {
@@ -96,25 +98,36 @@
 }
 
 .ticket-details {
-  background-color: #f9fafb;
-  padding: 1rem;
+  background-color: #f3f0ec;
+  padding: 0.75rem;
   border-radius: 0.5rem;
-  border-left: 4px solid #4f8cff;
-  margin-bottom: 2rem;
+  border-left: 4px solid var(--primary-color);
+  margin-bottom: 1.25rem;
   white-space: pre-wrap;
   line-height: 1.6;
-  margin-left: 2.5rem;
+  margin-left: 1.5rem;
+  font-size: 0.9rem;
 }
 
 .modal-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  padding-top: 1rem;
+  gap: 0.375rem;
+  padding-top: 0.75rem;
   border-top: 1px solid #e5e7eb;
 }
 
 .modal-actions button {
   flex: 1;
-  min-width: 120px;
+  min-width: 100px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }

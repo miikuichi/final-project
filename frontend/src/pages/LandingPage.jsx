@@ -71,51 +71,57 @@ export default function LandingPage() {
         onHome={() => window.location.reload()}
         onIssueTicket={() => navigate("/issue-ticket")}
       />
-      <div className="login-container">
-        <h2>PayrollPro Login</h2>
-        <p>Sign in to access your account</p>
+      <div className="landing-content">
+        <div className="login-container">
+          <h2>PayrollPro Login</h2>
+          <p>Sign in to access your account</p>
 
-        <form onSubmit={handleLogin} className="login-form">
-          <div className="form-group">
-            <label>Username *</label>
-            <input
-              type="text"
-              placeholder="Enter username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-          </div>
+          <form onSubmit={handleLogin} className="login-form">
+            <div className="form-group">
+              <label>Username *</label>
+              <input
+                type="text"
+                placeholder="Enter username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
 
-          <div className="form-group">
-            <label>Password *</label>
-            <input
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-          </div>
+            <div className="form-group">
+              <label>Password *</label>
+              <input
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
 
-          {error && <div className="error-alert">{error}</div>}
+            {error && <div className="error-alert">{error}</div>}
 
-          <div className="form-actions">
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={handleSignup}
-              disabled={isLoading}
-            >
-              Sign Up
-            </button>
-            <button type="submit" className="btn-primary" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Log In"}
-            </button>
-          </div>
-        </form>
+            <div className="form-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={handleSignup}
+                disabled={isLoading}
+              >
+                Sign Up
+              </button>
+              <button
+                type="submit"
+                className="btn-primary"
+                disabled={isLoading}
+              >
+                {isLoading ? "Logging in..." : "Log In"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

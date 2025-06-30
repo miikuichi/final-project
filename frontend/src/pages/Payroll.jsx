@@ -334,18 +334,8 @@ export default function Payroll() {
         </div>
         <div className="payroll-right">
           {selected && (
-            <div
-              style={{
-                display: "flex",
-                gap: "2rem",
-                alignItems: "flex-start",
-                flexWrap: "wrap",
-              }}
-            >
-              <div
-                className="payroll-details"
-                style={{ flex: 1, minWidth: 280, maxWidth: 350 }}
-              >
+            <div className="payroll-columns">
+              <div className={`payroll-details${calculatedSalary ? ' expanded' : ''}`}>
                 <div className="form-section">
                   <h3>Salary Computation</h3>
 
@@ -461,15 +451,7 @@ export default function Payroll() {
                 </div>
 
                 {calculatedSalary && (
-                  <div
-                    style={{
-                      marginTop: "1.5rem",
-                      padding: "1rem",
-                      background: "#f8f9fa",
-                      borderRadius: "8px",
-                      fontSize: "0.9rem",
-                    }}
-                  >
+                  <div className="salary-calculation-box">
                     <h4
                       style={{
                         margin: "0 0 1rem 0",
@@ -588,7 +570,7 @@ export default function Payroll() {
                   </div>
                 )}
               </div>
-              <div className="salary-cards" style={{ flex: 1, minWidth: 320 }}>
+              <div className="salary-cards">
                 <h3>Salary Periods</h3>
                 {salaryCards
                   .slice()

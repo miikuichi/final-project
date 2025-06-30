@@ -76,7 +76,7 @@ export default function TrackTickets() {
   return (
     <div>
       <HRNavBar />
-      <div className="track-tickets-container">
+      <div className="track-tickets-container" style={{ marginTop: "6rem" }}>
         <h2>Track My Tickets</h2>
         {error && (
           <div className="error-alert">
@@ -94,6 +94,9 @@ export default function TrackTickets() {
             <button
               onClick={() => navigate("/issue-ticket")}
               className="btn-primary"
+              style={{
+                margin: "auto",
+              }}
             >
               Create Your First Ticket
             </button>

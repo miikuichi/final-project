@@ -40,90 +40,92 @@ export default function SignUp() {
   };
 
   return (
-    <div className="add-employee-container" style={{ maxWidth: "400px" }}>
-      <h2>Sign Up</h2>
+    <div className="signup-page">
+      <div className="signup-container">
+        <h2>Sign Up</h2>
 
-      <form onSubmit={handleSignUp} className="employee-form">
-        <div className="form-section">
-          <h3>Create Account</h3>
+        <form onSubmit={handleSignUp} className="employee-form">
+          <div className="form-section">
+            <h3>Create Account</h3>
 
-          <div className="form-group">
-            <label>Username *</label>
-            <input
-              type="text"
-              placeholder="Enter username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Password *</label>
-            <input
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Confirm Password *</label>
-            <input
-              type="password"
-              placeholder="Confirm password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          {error && (
-            <div
-              style={{
-                color: "#ef4444",
-                backgroundColor: "#fef2f2",
-                padding: "0.75rem",
-                borderRadius: "0.5rem",
-                border: "1px solid #fecaca",
-                marginBottom: "1rem",
-              }}
-            >
-              {error}
+            <div className="form-group">
+              <label>Username *</label>
+              <input
+                type="text"
+                placeholder="Enter username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
             </div>
-          )}
 
-          {success && (
-            <div
-              style={{
-                color: "#059669",
-                backgroundColor: "#f0fdf4",
-                padding: "0.75rem",
-                borderRadius: "0.5rem",
-                border: "1px solid #bbf7d0",
-                marginBottom: "1rem",
-              }}
-            >
-              {success}
+            <div className="form-group">
+              <label>Password *</label>
+              <input
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
-          )}
 
-          <div className="form-actions">
-            <button
-              type="button"
-              className="btn-cancel"
-              onClick={() => navigate("/")}
-            >
-              Cancel
-            </button>
-            <button type="submit" className="btn-submit">
-              Sign Up
-            </button>
+            <div className="form-group">
+              <label>Confirm Password *</label>
+              <input
+                type="password"
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            {error && (
+              <div
+                style={{
+                  color: "#ef4444",
+                  backgroundColor: "#fef2f2",
+                  padding: "0.75rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid #fecaca",
+                  marginBottom: "1rem",
+                }}
+              >
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div
+                style={{
+                  color: "#059669",
+                  backgroundColor: "#f0fdf4",
+                  padding: "0.75rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid #bbf7d0",
+                  marginBottom: "1rem",
+                }}
+              >
+                {success}
+              </div>
+            )}
+
+            <div className="form-actions">
+              <button
+                type="button"
+                className="btn-cancel"
+                onClick={() => navigate("/")}
+              >
+                Cancel
+              </button>
+              <button type="submit" className="btn-submit">
+                Sign Up
+              </button>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

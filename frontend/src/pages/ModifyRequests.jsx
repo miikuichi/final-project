@@ -180,7 +180,7 @@ export default function ModifyRequests() {
           borderRadius: "1.5rem",
           boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
           minHeight: "90vh",
-          marginTop: "4.5rem",
+          marginTop: "6rem",
         }}
       >
         <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>

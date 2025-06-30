@@ -82,6 +82,7 @@ export default function ManageTickets() {
           minWidth: "50vw",
           minHeight: "80vh",
           margin: "4.5rem auto 0 auto",
+          marginTop: "6rem",
           padding: "2.5rem 2rem",
           display: "flex",
           flexDirection: "column",
