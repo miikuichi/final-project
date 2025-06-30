@@ -12,27 +12,56 @@ export default function SignUp() {
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
+  // Password validation function
+  const validatePassword = (password) => {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(password);
+  };
+
+  const getPasswordRequirements = () => {
+    return "Password must be at least 8 characters long and contain: 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character (@$!%*?&)";
+  };
+
   const handleSignUp = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    
+    // Client-side validation
+    if (!username.trim()) {
+      setError("Username is required.");
+      return;
+    }
+    
+    if (!password.trim()) {
+      setError("Password is required.");
+      return;
+    }
+    
+    if (!validatePassword(password)) {
+      setError(getPasswordRequirements());
+      return;
+    }
+    
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
+    
     try {
       const res = await fetch("http://localhost:8080/api/users/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, role: 1 }), // role=1 for employee
+        body: JSON.stringify({ username: username.trim(), password, role: 1 }), // role=1 for employee
       });
+      
+      const data = await res.json();
+      
       if (res.ok) {
         setSuccess("Account created! You can now log in.");
         setTimeout(() => navigate("/"), 1200);
-      } else if (res.status === 409) {
-        setError("Username already exists.");
       } else {
-        setError("Sign up failed.");
+        setError(data.error || "Sign up failed.");
       }
     } catch (err) {
       setError("Network error.");
@@ -68,6 +97,9 @@ export default function SignUp() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <small style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '0.25rem', display: 'block' }}>
+                Password must contain at least 8 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character
+              </small>
             </div>
 
             <div className="form-group">

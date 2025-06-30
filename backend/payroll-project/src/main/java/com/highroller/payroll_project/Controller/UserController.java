@@ -2,11 +2,14 @@ package com.highroller.payroll_project.Controller;
 
 import com.highroller.payroll_project.Entity.UserEntity;
 import com.highroller.payroll_project.Repository.UserRepository;
+import com.highroller.payroll_project.util.ValidationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import java.util.Optional;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +20,12 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private ValidationUtils validationUtils;
 
     public static final int ROLE_ADMIN = 0;
     public static final int ROLE_HR = 1;
@@ -24,11 +33,31 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody UserEntity user) {
         try {
+            // Input validation and sanitization
+            if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Username is required"));
+            }
+            
+            if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Password is required"));
+            }
+            
+            // Sanitize inputs
+            user.setUsername(validationUtils.sanitizeInput(user.getUsername()));
+            
+            // Validate password strength
+            if (!validationUtils.isValidPassword(user.getPassword())) {
+                return ResponseEntity.badRequest().body(Map.of("error", validationUtils.getPasswordRequirements()));
+            }
+            
             // Check if username already exists
             if (userRepository.findByUsername(user.getUsername()).isPresent()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Username already exists"));
             }
 
+            // Hash the password before saving
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            
             // Set role to HR by default
             user.setRole(ROLE_HR);
 
@@ -39,15 +68,27 @@ public class UserController {
                     "role", saved.getRole()));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.internalServerError().body(Map.of("error", "Error creating user: " + e.getMessage()));
+            return ResponseEntity.internalServerError().body(Map.of("error", "Error creating user"));
         }
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserEntity user, HttpSession session) {
         try {
-            Optional<UserEntity> found = userRepository.findByUsername(user.getUsername());
-            if (found.isPresent() && found.get().getPassword().equals(user.getPassword())) {
+            // Input validation and sanitization
+            if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Username is required"));
+            }
+            
+            if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Password is required"));
+            }
+            
+            // Sanitize username input
+            String sanitizedUsername = validationUtils.sanitizeInput(user.getUsername());
+            
+            Optional<UserEntity> found = userRepository.findByUsername(sanitizedUsername);
+            if (found.isPresent() && passwordEncoder.matches(user.getPassword(), found.get().getPassword())) {
                 UserEntity loggedInUser = found.get();
 
                 // Store user info in session
@@ -68,7 +109,7 @@ public class UserController {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.internalServerError().body(Map.of("error", "Error during login: " + e.getMessage()));
+            return ResponseEntity.internalServerError().body(Map.of("error", "Error during login"));
         }
     }
 

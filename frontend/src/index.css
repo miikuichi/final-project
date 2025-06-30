@@ -1,3 +1,6 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Comfortaa:wght@300;400;500;600;700&display=swap');
+
 /* Global CSS Variables - Stardew Valley Inspired Design System */
 :root {
   /* Main Theme Colors - Rustic & Cozy */
@@ -42,8 +45,6 @@
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Comfortaa:wght@300;400;500;600;700&display=swap');
 
 * {
   box-sizing: border-box;
