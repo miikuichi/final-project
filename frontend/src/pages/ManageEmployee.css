@@ -74,31 +74,28 @@
 
 /* Search bar */
 .search-bar-row {
-  margin-bottom: 1.25rem;
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
+  margin-bottom: 1.5rem;
+  width: 100%;
 }
 
-.search-bar {
-  flex: 1;
-  padding: 0.625rem 0.875rem;
+.manage-employee-search {
+  width: 100%;
+}
+
+.manage-employee-search .search-input {
+  width: 100%;
   border: 2px solid var(--border-color);
-  border-radius: var(--radius-md);
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  background: var(--surface-color);
-  color: var(--text-primary);
+  border-radius: 0.5rem;
+  font-size: 1rem;
 }
 
-.search-bar:focus {
-  outline: none;
+.manage-employee-search .search-input:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
 }
 
-.search-bar::placeholder {
-  color: var(--text-secondary);
+.manage-employee-search .search-icon {
+  right: 1rem;
 }
 
 /* Employee list */

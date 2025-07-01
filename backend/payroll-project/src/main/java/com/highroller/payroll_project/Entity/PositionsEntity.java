@@ -21,7 +21,7 @@ public class PositionsEntity {
 
     // Enum for department types
     public enum DepartmentType {
-        Operations, Management
+        IT, HR, Finance, Marketing, Operations
     }
 
     // Constructors

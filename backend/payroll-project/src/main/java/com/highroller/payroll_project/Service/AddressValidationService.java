@@ -125,14 +125,14 @@ public class AddressValidationService {
         }
     }
 
-    /**
+    /*
      * Builds full address string for API calls
      */
     private String buildFullAddress(String street, String city, String state, String zipCode, String country) {
         return buildFullAddress(street, null, city, state, zipCode, country);
     }
 
-    /**
+    /*
      * Builds full address string for API calls with barangay support
      * Optimized for Philippine addresses but works internationally
      */

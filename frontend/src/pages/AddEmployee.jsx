@@ -34,9 +34,9 @@ export default function AddEmployee() {
   const navigate = useNavigate();
   const { role } = useRole();
 
-  // Load departments and positions from backend
+  // Load departments and positions from backend (hardcoded)
   useEffect(() => {
-    fetch("http://localhost:8081/api/employees/departments")
+    fetch("http://localhost:8080/api/employees/departments")
       .then((res) => res.json())
       .then((data) => {
         setDepartments(data);
@@ -57,6 +57,35 @@ export default function AddEmployee() {
       setAvailablePositions([]);
     }
   }, [form.department, departments]);
+
+  // Debug logging (only in development)
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      const requiredFields = {
+        firstName: !!form.firstName,
+        lastName: !!form.lastName,
+        email: !!form.email,
+        dateHired: !!form.dateHired,
+        department: !!form.department,
+        position: !!form.position,
+      };
+
+      const formValid = Object.keys(errors).length === 0;
+      const allRequiredFilled = Object.values(requiredFields).every(Boolean);
+
+      console.group("🐛 AddEmployee Debug Info");
+      console.log("📋 Form Valid:", formValid);
+      console.log(
+        "❌ Current Errors:",
+        Object.keys(errors).length > 0 ? errors : "None"
+      );
+      console.log("✅ Required Fields:", requiredFields);
+      console.log("🎯 All Required Filled:", allRequiredFilled);
+      console.log("🌐 Backend URL:", "http://localhost:8080/api/employees");
+      console.log("📝 Full Form State:", form);
+      console.groupEnd();
+    }
+  }, [form, errors]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -145,7 +174,7 @@ export default function AddEmployee() {
     try {
       console.log("Sending request to backend...");
       // Send as JSON, not FormData
-      const response = await fetch("http://localhost:8081/api/employees", {
+      const response = await fetch("http://localhost:8080/api/employees", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -532,54 +561,6 @@ export default function AddEmployee() {
               </div>
             </div>
           </div>
-
-          {/* Debug Information (remove this in production) */}
-          {process.env.NODE_ENV === "development" && (
-            <div
-              className="form-section"
-              style={{
-                backgroundColor: "#f0f0f0",
-                padding: "10px",
-                margin: "10px 0",
-              }}
-            >
-              <h4>Debug Info</h4>
-              <div style={{ fontSize: "12px" }}>
-                <p>
-                  <strong>Form Valid:</strong>{" "}
-                  {Object.keys(errors).length === 0 ? "Yes" : "No"}
-                </p>
-                <p>
-                  <strong>Current Errors:</strong>{" "}
-                  {Object.keys(errors).length > 0
-                    ? JSON.stringify(errors, null, 2)
-                    : "None"}
-                </p>
-                <p>
-                  <strong>Required Fields:</strong>
-                </p>
-                <ul>
-                  <li>First Name: {form.firstName ? "✓" : "✗"}</li>
-                  <li>Last Name: {form.lastName ? "✓" : "✗"}</li>
-                  <li>Email: {form.email ? "✓" : "✗"}</li>
-                  <li>Date Hired: {form.dateHired ? "✓" : "✗"}</li>
-                  <li>Department: {form.department ? "✓" : "✗"}</li>
-                  <li>Position: {form.position ? "✓" : "✗"}</li>
-                </ul>
-                <p>
-                  <strong>Backend URL:</strong>{" "}
-                  http://localhost:8080/api/employees
-                </p>
-                <button
-                  type="button"
-                  onClick={() => console.log("Full form state:", form)}
-                  style={{ padding: "5px", margin: "5px" }}
-                >
-                  Log Form to Console
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* Submit Button */}
           <div className="form-actions">

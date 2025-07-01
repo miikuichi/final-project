@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRole } from "../components/RoleContext";
 import { AdminNavBar, HRNavBar } from "../components/NavBar";
 import Button from "../components/Button";
 import SalaryCard from "../components/SalaryCard";
+import SearchBar from "../components/SearchBar";
 import "./Payroll.css";
 
 export default function Payroll() {
   const { role } = useRole();
   const [employees, setEmployees] = useState([]);
+  const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [selected, setSelected] = useState(null);
   const [workHours, setWorkHours] = useState({
     regularHours: "",
@@ -39,14 +41,18 @@ export default function Payroll() {
         const response = await fetch("http://localhost:8080/api/employees");
         if (response.ok) {
           const data = await response.json();
-          setEmployees(Array.isArray(data) ? data : []);
+          const empData = Array.isArray(data) ? data : [];
+          setEmployees(empData);
+          setFilteredEmployees(empData);
         } else {
           console.error("Failed to fetch employees");
           setEmployees([]);
+          setFilteredEmployees([]);
         }
       } catch (error) {
         console.error("Error fetching employees:", error);
         setEmployees([]);
+        setFilteredEmployees([]);
       }
     };
 
@@ -435,11 +441,24 @@ export default function Payroll() {
       <div className="payroll-container">
         <div className="payroll-left">
           <h2>Employee List</h2>
+          <div className="payroll-search">
+            <SearchBar
+              data={employees}
+              onFilter={setFilteredEmployees}
+              placeholder="Search by name..."
+              searchKeys={["firstName", "lastName"]}
+              className="payroll-search-bar"
+            />
+          </div>
           <div className="payroll-emp-list">
-            {employees.length === 0 && (
-              <div className="no-employees">No employees found.</div>
+            {filteredEmployees.length === 0 && (
+              <div className="no-employees">
+                {employees.length === 0
+                  ? "No employees found."
+                  : "No employees match your search."}
+              </div>
             )}
-            {employees.map((emp) => (
+            {filteredEmployees.map((emp) => (
               <div
                 className={`payroll-emp-card${
                   selected && selected.id === emp.id ? " selected" : ""

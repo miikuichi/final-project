@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useRole } from "../components/RoleContext";
 import { AdminNavBar, HRNavBar } from "../components/NavBar";
+import SearchBar from "../components/SearchBar";
 import "./ManageEmployee.css";
 
 export default function ManageEmployee() {
   const { role } = useRole();
-  const [search, setSearch] = useState("");
   const [employees, setEmployees] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -132,23 +132,6 @@ export default function ManageEmployee() {
     refreshEmployees();
   }, []);
 
-  useEffect(() => {
-    if (!search) {
-      setFiltered(employees);
-    } else {
-      const s = search.toLowerCase();
-      setFiltered(
-        employees.filter(
-          (e) =>
-            (e.id && e.id.toString().includes(s)) ||
-            (e.lastName && e.lastName.toLowerCase().includes(s)) ||
-            (e.firstName && e.firstName.toLowerCase().includes(s)) ||
-            (e.email && e.email.toLowerCase().includes(s))
-        )
-      );
-    }
-  }, [search, employees]);
-
   return (
     <div>
       {role === "admin" ? <AdminNavBar /> : <HRNavBar />}
@@ -171,12 +154,12 @@ export default function ManageEmployee() {
         </h2>
 
         <div className="search-bar-row">
-          <input
-            className="search-bar"
-            type="text"
-            placeholder="Search by Employee ID or Name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+          <SearchBar
+            data={employees}
+            onFilter={setFiltered}
+            placeholder="Search by name..."
+            searchKeys={["firstName", "lastName", "employeeId"]}
+            className="manage-employee-search"
           />
         </div>
 
@@ -189,9 +172,9 @@ export default function ManageEmployee() {
             <div className="employee-list">
               {filtered.length === 0 ? (
                 <div className="no-employees">
-                  {search
-                    ? "No employees found matching your search."
-                    : "No employees found. Add some employees first."}
+                  {employees.length === 0
+                    ? "No employees found. Add some employees first."
+                    : "No employees found matching your search."}
                 </div>
               ) : (
                 filtered.map((emp) => (
