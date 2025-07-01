@@ -91,6 +91,7 @@ public class EmployeeController {
                         data.put("addressCity", emp.getAddressCity());
                         data.put("addressProvince", emp.getAddressProvince());
                         data.put("addressZip", emp.getAddressZip());
+                        data.put("addressCountry", emp.getAddressCountry());
 
                         data.put("image", emp.getImage());
                         return data;
@@ -210,10 +211,31 @@ public class EmployeeController {
             String addressCity = validationUtils.sanitizeInput(employeeData.get("addressCity"));
             String addressProvince = validationUtils.sanitizeInput(employeeData.get("addressProvince"));
             String addressZip = validationUtils.sanitizeInput(employeeData.get("addressZip"));
+            String addressCountry = validationUtils.sanitizeInput(employeeData.get("addressCountry"));
 
-            // Validate address using Address API
-            if (addressHouse != null && addressCity != null && addressProvince != null && addressZip != null) {
-                if (!addressValidationService.validateAddress(addressHouse, addressCity, addressProvince, addressZip)) {
+            if (addressCountry == null || addressCountry.trim().isEmpty()) {
+                addressCountry = "US";
+            }
+
+            // Validate address using Address API (only if all required fields are provided)
+            if (addressHouse != null && !addressHouse.trim().isEmpty() &&
+                    addressCity != null && !addressCity.trim().isEmpty() &&
+                    addressProvince != null && !addressProvince.trim().isEmpty() &&
+                    addressZip != null && !addressZip.trim().isEmpty()) {
+
+                String addressBarangay = validationUtils.sanitizeInput(employeeData.get("addressBarangay"));
+
+                System.out.println("Validating address components:");
+                System.out.println("  House: " + addressHouse);
+                System.out.println("  Barangay: " + addressBarangay);
+                System.out.println("  City: " + addressCity);
+                System.out.println("  Province: " + addressProvince);
+                System.out.println("  ZIP: " + addressZip);
+                System.out.println("  Country: " + addressCountry);
+
+                if (!addressValidationService.validateAddress(addressHouse, addressBarangay, addressCity,
+                        addressProvince, addressZip,
+                        addressCountry)) {
                     return ResponseEntity.badRequest().body(Map.of("error", "Invalid address format or details"));
                 }
             }
@@ -224,6 +246,7 @@ public class EmployeeController {
             employee.setAddressCity(addressCity);
             employee.setAddressProvince(addressProvince);
             employee.setAddressZip(addressZip);
+            employee.setAddressCountry(addressCountry);
 
             System.out.println("About to save employee...");
             EmployeeEntity savedEmployee = employeeRepository.save(employee);
@@ -265,6 +288,7 @@ public class EmployeeController {
             data.put("addressCity", emp.getAddressCity());
             data.put("addressProvince", emp.getAddressProvince());
             data.put("addressZip", emp.getAddressZip());
+            data.put("addressCountry", emp.getAddressCountry());
 
             data.put("image", emp.getImage());
 
@@ -281,22 +305,88 @@ public class EmployeeController {
             try {
                 EmployeeEntity employee = employeeOpt.get();
 
-                // Update fields
+                // Basic information updates with validation
                 if (employeeData.get("firstName") != null) {
-                    employee.setFirstName((String) employeeData.get("firstName"));
+                    String firstName = (String) employeeData.get("firstName");
+                    if (firstName.trim().isEmpty()) {
+                        return ResponseEntity.badRequest().body(Map.of("error", "First name cannot be empty"));
+                    }
+                    employee.setFirstName(validationUtils.sanitizeInput(firstName));
                 }
+
                 if (employeeData.get("lastName") != null) {
-                    employee.setLastName((String) employeeData.get("lastName"));
+                    String lastName = (String) employeeData.get("lastName");
+                    if (lastName.trim().isEmpty()) {
+                        return ResponseEntity.badRequest().body(Map.of("error", "Last name cannot be empty"));
+                    }
+                    employee.setLastName(validationUtils.sanitizeInput(lastName));
                 }
+
+                if (employeeData.get("middleInitial") != null) {
+                    employee.setMiddleInitial(
+                            validationUtils.sanitizeInput((String) employeeData.get("middleInitial")));
+                }
+
+                if (employeeData.get("suffix") != null) {
+                    employee.setSuffix(validationUtils.sanitizeInput((String) employeeData.get("suffix")));
+                }
+
                 if (employeeData.get("email") != null) {
-                    employee.setEmail((String) employeeData.get("email"));
+                    String email = (String) employeeData.get("email");
+                    if (!validationUtils.isValidEmail(email)) {
+                        return ResponseEntity.badRequest().body(Map.of("error", "Invalid email format"));
+                    }
+                    employee.setEmail(validationUtils.sanitizeInput(email));
                 }
+
                 if (employeeData.get("cellphone") != null) {
-                    employee.setCellphone((String) employeeData.get("cellphone"));
+                    String phone = (String) employeeData.get("cellphone");
+                    if (!validationUtils.isValidPhone(phone)) {
+                        return ResponseEntity.badRequest().body(Map.of("error", "Invalid phone number format"));
+                    }
+                    employee.setCellphone(validationUtils.sanitizeInput(phone));
                 }
+
+                // Date fields
+                if (employeeData.get("birthday") != null) {
+                    try {
+                        LocalDate birthday = LocalDate.parse((String) employeeData.get("birthday"));
+                        if (!validationUtils.isDateNotInFuture(birthday)) {
+                            return ResponseEntity.badRequest()
+                                    .body(Map.of("error", "Birthday cannot be in the future"));
+                        }
+                        employee.setBirthday(birthday);
+                    } catch (DateTimeParseException e) {
+                        return ResponseEntity.badRequest().body(Map.of("error", "Invalid birthday format"));
+                    }
+                }
+
+                if (employeeData.get("dateHired") != null) {
+                    try {
+                        LocalDate dateHired = LocalDate.parse((String) employeeData.get("dateHired"));
+                        if (!validationUtils.isDateNotInFuture(dateHired)) {
+                            return ResponseEntity.badRequest()
+                                    .body(Map.of("error", "Date hired cannot be in the future"));
+                        }
+                        employee.setDateHired(dateHired);
+                    } catch (DateTimeParseException e) {
+                        return ResponseEntity.badRequest().body(Map.of("error", "Invalid date hired format"));
+                    }
+                }
+
+                // Optional personal information
+                if (employeeData.get("bloodType") != null) {
+                    employee.setBloodType(validationUtils.sanitizeInput((String) employeeData.get("bloodType")));
+                }
+
+                if (employeeData.get("religion") != null) {
+                    employee.setReligion(validationUtils.sanitizeInput((String) employeeData.get("religion")));
+                }
+
+                // Department and position updates
                 if (employeeData.get("department") != null && employeeData.get("position") != null) {
-                    String department = (String) employeeData.get("department");
-                    String position = (String) employeeData.get("position");
+                    String department = validationUtils.sanitizeInput((String) employeeData.get("department"));
+                    String position = validationUtils.sanitizeInput((String) employeeData.get("position"));
                     employee.setDepartment(department);
                     employee.setPosition(position);
                     // Auto-update salary
@@ -306,9 +396,34 @@ public class EmployeeController {
                     }
                 }
 
+                // Address updates
+                if (employeeData.get("addressHouse") != null) {
+                    employee.setAddressHouse(validationUtils.sanitizeInput((String) employeeData.get("addressHouse")));
+                }
+                if (employeeData.get("addressBarangay") != null) {
+                    employee.setAddressBarangay(
+                            validationUtils.sanitizeInput((String) employeeData.get("addressBarangay")));
+                }
+                if (employeeData.get("addressCity") != null) {
+                    employee.setAddressCity(validationUtils.sanitizeInput((String) employeeData.get("addressCity")));
+                }
+                if (employeeData.get("addressProvince") != null) {
+                    employee.setAddressProvince(
+                            validationUtils.sanitizeInput((String) employeeData.get("addressProvince")));
+                }
+                if (employeeData.get("addressZip") != null) {
+                    employee.setAddressZip(validationUtils.sanitizeInput((String) employeeData.get("addressZip")));
+                }
+                if (employeeData.get("addressCountry") != null) {
+                    employee.setAddressCountry(
+                            validationUtils.sanitizeInput((String) employeeData.get("addressCountry")));
+                }
+
                 employeeRepository.save(employee);
                 return ResponseEntity.ok(Map.of("message", "Employee updated successfully"));
             } catch (Exception e) {
+                System.err.println("Error updating employee: " + e.getMessage());
+                e.printStackTrace();
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Failed to update employee: " + e.getMessage()));
             }

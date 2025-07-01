@@ -66,6 +66,9 @@ public class EmployeeEntity {
     @Column(name = "address_zip", length = 20)
     private String addressZip;
 
+    @Column(name = "address_country", length = 100)
+    private String addressCountry;
+
     // Optional fields
     @Column(name = "religion", length = 100)
     private String religion;
@@ -238,6 +241,14 @@ public class EmployeeEntity {
 
     public void setAddressZip(String addressZip) {
         this.addressZip = addressZip;
+    }
+
+    public String getAddressCountry() {
+        return addressCountry;
+    }
+
+    public void setAddressCountry(String addressCountry) {
+        this.addressCountry = addressCountry;
     }
 
     public String getReligion() {

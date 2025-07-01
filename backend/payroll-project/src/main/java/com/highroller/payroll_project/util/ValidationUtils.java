@@ -14,7 +14,7 @@ public class ValidationUtils {
             "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
 
     private static final Pattern PHONE_PATTERN = Pattern.compile(
-            "^\\(?([0-9]{3})\\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$");
+            "^[\\+]?[0-9\\s\\-\\(\\)\\.]{7,20}$");
 
     public static final double MAX_REGULAR_HOURS_MONTHLY = 184.0;
     public static final double MAX_OVERTIME_HOURS_MONTHLY = 80.0;

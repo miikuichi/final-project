@@ -463,6 +463,56 @@ function EditEmployeeModal({
                 fontWeight: "bold",
               }}
             >
+              Middle Initial:
+            </label>
+            <input
+              type="text"
+              value={employee.middleInitial || ""}
+              onChange={(e) =>
+                handleInputChange("middleInitial", e.target.value)
+              }
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              maxLength={10}
+            />
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
+              Suffix:
+            </label>
+            <input
+              type="text"
+              value={employee.suffix || ""}
+              onChange={(e) => handleInputChange("suffix", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              maxLength={20}
+            />
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
               Email:
             </label>
             <input
@@ -492,18 +542,117 @@ function EditEmployeeModal({
             <input
               type="text"
               value={employee.cellphone || ""}
-              onChange={(e) => {
-                // Only allow numbers like in AddEmployee form
-                const value = e.target.value.replace(/[^0-9]/g, "");
-                handleInputChange("cellphone", value);
-              }}
+              onChange={(e) => handleInputChange("cellphone", e.target.value)}
               style={{
                 width: "100%",
                 padding: "0.5rem",
                 borderRadius: "4px",
                 border: "1px solid #ccc",
               }}
-              maxLength={15}
+              maxLength={20}
+            />
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
+              Birthday:
+            </label>
+            <input
+              type="date"
+              value={employee.birthday || ""}
+              onChange={(e) => handleInputChange("birthday", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
+              Date Hired:
+            </label>
+            <input
+              type="date"
+              value={employee.dateHired || ""}
+              onChange={(e) => handleInputChange("dateHired", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              required
+            />
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
+              Blood Type:
+            </label>
+            <select
+              value={employee.bloodType || ""}
+              onChange={(e) => handleInputChange("bloodType", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            >
+              <option value="">Select Blood Type</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: "1rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontWeight: "bold",
+              }}
+            >
+              Religion:
+            </label>
+            <input
+              type="text"
+              value={employee.religion || ""}
+              onChange={(e) => handleInputChange("religion", e.target.value)}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              maxLength={100}
             />
           </div>
 
@@ -676,8 +825,24 @@ function EditEmployeeModal({
                 padding: "0.5rem",
                 borderRadius: "4px",
                 border: "1px solid #ccc",
+                marginBottom: "0.5rem",
               }}
               maxLength={10}
+            />
+            <input
+              type="text"
+              placeholder="Country"
+              value={employee.addressCountry || ""}
+              onChange={(e) =>
+                handleInputChange("addressCountry", e.target.value)
+              }
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+              maxLength={100}
             />
           </div>
 

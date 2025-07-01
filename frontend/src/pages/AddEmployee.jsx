@@ -22,6 +22,7 @@ const initialState = {
   addressCity: "",
   addressProvince: "",
   addressZip: "",
+  addressCountry: "PH",
 };
 
 export default function AddEmployee() {
@@ -35,7 +36,7 @@ export default function AddEmployee() {
 
   // Load departments and positions from backend
   useEffect(() => {
-    fetch("http://localhost:8080/api/employees/departments")
+    fetch("http://localhost:8081/api/employees/departments")
       .then((res) => res.json())
       .then((data) => {
         setDepartments(data);
@@ -88,13 +89,13 @@ export default function AddEmployee() {
       newErrors.email = "Please enter a valid email address";
     }
 
-    // Phone number validation (basic US format)
-    if (
-      form.cellphone &&
-      !/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/.test(form.cellphone)
-    ) {
-      newErrors.cellphone =
-        "Please enter a valid phone number (e.g., 555-123-4567)";
+    // Phone number validation (flexible format)
+    if (form.cellphone && form.cellphone.trim()) {
+      // Allow various phone formats - just ensure it's reasonable length and contains numbers
+      const phoneDigitsOnly = form.cellphone.replace(/\D/g, "");
+      if (phoneDigitsOnly.length < 7 || phoneDigitsOnly.length > 15) {
+        newErrors.cellphone = "Please enter a valid phone number (7-15 digits)";
+      }
     }
 
     // Date validation - birthday cannot be in the future
@@ -114,10 +115,11 @@ export default function AddEmployee() {
       form.addressProvince &&
       form.addressZip
     ) {
-      // ZIP code validation (US format)
-      if (!/^\d{5}(-\d{4})?$/.test(form.addressZip)) {
+      // ZIP/Postal code validation (flexible for international codes)
+      // Allow 3-10 digits, with optional letters and hyphens (covers US, Philippines, Canada, UK, etc.)
+      if (!/^[A-Za-z0-9\s\-]{3,10}$/.test(form.addressZip)) {
         newErrors.addressZip =
-          "Please enter a valid ZIP code (e.g., 12345 or 12345-6789)";
+          "Please enter a valid postal/ZIP code (3-10 characters)";
       }
     }
 
@@ -128,21 +130,31 @@ export default function AddEmployee() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log("Form submission started");
+    console.log("Current form data:", form);
+
     if (!validateForm()) {
+      console.log("Form validation failed, errors:", errors);
+      alert("Please fix the validation errors before submitting.");
       return;
     }
 
+    console.log("Form validation passed");
     setIsSubmitting(true);
 
     try {
+      console.log("Sending request to backend...");
       // Send as JSON, not FormData
-      const response = await fetch("http://localhost:8080/api/employees", {
+      const response = await fetch("http://localhost:8081/api/employees", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(form),
       });
+
+      console.log("Response status:", response.status);
+      console.log("Response ok:", response.ok);
 
       if (response.ok) {
         const result = await response.json();
@@ -160,6 +172,7 @@ export default function AddEmployee() {
       alert("Network error. Please check your connection and try again.");
     } finally {
       setIsSubmitting(false);
+      console.log("Form submission completed");
     }
   };
 
@@ -421,20 +434,38 @@ export default function AddEmployee() {
               </div>
 
               <div className="form-group">
-                <label>ZIP Code</label>
+                <label>ZIP/Postal Code</label>
                 <input
                   type="text"
                   name="addressZip"
                   value={form.addressZip}
-                  onChange={(e) => {
-                    // Only allow numbers
-                    const value = e.target.value.replace(/[^0-9]/g, "");
-                    handleInputChange({
-                      target: { name: "addressZip", value },
-                    });
-                  }}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 1000 (PH), 12345 (US), K1A 0A9 (CA)"
                   maxLength={10}
                 />
+                {errors.addressZip && (
+                  <span className="error-text">{errors.addressZip}</span>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>Country</label>
+                <select
+                  name="addressCountry"
+                  value={form.addressCountry}
+                  onChange={handleInputChange}
+                >
+                  <option value="US">United States</option>
+                  <option value="CA">Canada</option>
+                  <option value="MX">Mexico</option>
+                  <option value="PH">Philippines</option>
+                  <option value="GB">United Kingdom</option>
+                  <option value="AU">Australia</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="JP">Japan</option>
+                  <option value="OTHER">Other</option>
+                </select>
               </div>
             </div>
           </div>
@@ -501,6 +532,54 @@ export default function AddEmployee() {
               </div>
             </div>
           </div>
+
+          {/* Debug Information (remove this in production) */}
+          {process.env.NODE_ENV === "development" && (
+            <div
+              className="form-section"
+              style={{
+                backgroundColor: "#f0f0f0",
+                padding: "10px",
+                margin: "10px 0",
+              }}
+            >
+              <h4>Debug Info</h4>
+              <div style={{ fontSize: "12px" }}>
+                <p>
+                  <strong>Form Valid:</strong>{" "}
+                  {Object.keys(errors).length === 0 ? "Yes" : "No"}
+                </p>
+                <p>
+                  <strong>Current Errors:</strong>{" "}
+                  {Object.keys(errors).length > 0
+                    ? JSON.stringify(errors, null, 2)
+                    : "None"}
+                </p>
+                <p>
+                  <strong>Required Fields:</strong>
+                </p>
+                <ul>
+                  <li>First Name: {form.firstName ? "✓" : "✗"}</li>
+                  <li>Last Name: {form.lastName ? "✓" : "✗"}</li>
+                  <li>Email: {form.email ? "✓" : "✗"}</li>
+                  <li>Date Hired: {form.dateHired ? "✓" : "✗"}</li>
+                  <li>Department: {form.department ? "✓" : "✗"}</li>
+                  <li>Position: {form.position ? "✓" : "✗"}</li>
+                </ul>
+                <p>
+                  <strong>Backend URL:</strong>{" "}
+                  http://localhost:8080/api/employees
+                </p>
+                <button
+                  type="button"
+                  onClick={() => console.log("Full form state:", form)}
+                  style={{ padding: "5px", margin: "5px" }}
+                >
+                  Log Form to Console
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Submit Button */}
           <div className="form-actions">

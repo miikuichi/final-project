@@ -1,48 +1,186 @@
 package com.highroller.payroll_project.Service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.util.UriUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 @Service
 public class AddressValidationService {
 
     private final WebClient webClient;
+    private final ObjectMapper objectMapper;
 
-    // Using USPS Address Validation API (free tier available)
-    // Alternative: Use Google Maps API, MapBox, or other address validation
-    // services
-    private static final String USPS_API_BASE_URL = "https://secure.shippingapis.com/shippingapi.dll";
+    @Value("${google.maps.api.key:}")
+    private String googleMapsApiKey;
+
+    private static final String GOOGLE_GEOCODING_API_URL = "https://maps.googleapis.com/maps/api/geocode/json";
 
     public AddressValidationService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder
-                .baseUrl(USPS_API_BASE_URL)
-                .build();
+        this.webClient = webClientBuilder.build();
+        this.objectMapper = new ObjectMapper();
     }
 
     /**
-     * Validates address using external API
-     * For demo purposes, this uses a simple format validation
-     * In production, you would integrate with USPS, Google Maps, or similar service
+     * Validates address using Google Maps Geocoding API
+     * Falls back to basic validation if API is unavailable or no API key is
+     * provided
      */
     public boolean validateAddress(String street, String city, String state, String zipCode) {
+        return validateAddress(street, city, state, zipCode, "US");
+    }
+
+    /**
+     * Validates address using Google Maps Geocoding API with country support
+     */
+    public boolean validateAddress(String street, String city, String state, String zipCode, String country) {
+        return validateAddress(street, null, city, state, zipCode, country);
+    }
+
+    /**
+     * Validates address using Google Maps Geocoding API with full address
+     * components including barangay
+     */
+    public boolean validateAddress(String street, String barangay, String city, String state, String zipCode,
+            String country) {
         try {
-            // Basic format validation
             if (!isBasicFormatValid(street, city, state, zipCode)) {
                 return false;
             }
 
-            // For demo: Use simple ZIP code validation
-            // In production, you would call the actual API
-            return isValidZipCode(zipCode) && isValidState(state);
-
+            if (googleMapsApiKey != null && !googleMapsApiKey.trim().isEmpty()) {
+                return validateAddressWithGoogleMaps(street, barangay, city, state, zipCode, country);
+            } else {
+                System.out.println("Google Maps API key not configured, using basic validation");
+                return isValidZipCode(zipCode) && isValidState(state);
+            }
         } catch (Exception e) {
-            // Log error and default to basic validation
             System.err.println("Address validation service error: " + e.getMessage());
             return isBasicFormatValid(street, city, state, zipCode);
         }
+    }
+
+    /**
+     * Validates address using Google Maps Geocoding API
+     */
+    private boolean validateAddressWithGoogleMaps(String street, String city, String state, String zipCode,
+            String country) {
+        return validateAddressWithGoogleMaps(street, null, city, state, zipCode, country);
+    }
+
+    /**
+     * Validates address using Google Maps Geocoding API with barangay support
+     */
+    private boolean validateAddressWithGoogleMaps(String street, String barangay, String city, String state,
+            String zipCode,
+            String country) {
+        try {
+            String address = buildFullAddress(street, barangay, city, state, zipCode, country);
+            String encodedAddress = UriUtils.encode(address, StandardCharsets.UTF_8);
+            String url = GOOGLE_GEOCODING_API_URL + "?address=" + encodedAddress + "&key=" + googleMapsApiKey;
+
+            System.out.println("Validating address with Google Maps API:");
+            System.out.println("  Full address: " + address);
+            System.out.println("  Encoded URL: " + url);
+
+            String response = webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(Duration.ofSeconds(10))
+                    .block();
+
+            if (response != null) {
+                JsonNode jsonResponse = objectMapper.readTree(response);
+                String status = jsonResponse.get("status").asText();
+
+                System.out.println("  Google Maps API response status: " + status);
+
+                if ("OK".equals(status)) {
+                    JsonNode results = jsonResponse.get("results");
+                    boolean isValid = results != null && results.size() > 0;
+                    System.out.println("  Address validation result: " + (isValid ? "VALID" : "INVALID"));
+                    return isValid;
+                } else if ("ZERO_RESULTS".equals(status)) {
+                    System.out.println("  Google Maps found no results for this address - using basic validation");
+                    // For international addresses or remote areas, fall back to basic validation
+                    return isValidZipCode(zipCode) && isValidState(state);
+                } else {
+                    System.out.println("  Google Maps API error: " + status + " - using basic validation");
+                    // Fall back to basic validation on API errors (rate limits, invalid API key,
+                    // etc.)
+                    return isValidZipCode(zipCode) && isValidState(state);
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            System.err.println("Google Maps API validation error: " + e.getMessage());
+            e.printStackTrace();
+            return isValidZipCode(zipCode) && isValidState(state);
+        }
+    }
+
+    /**
+     * Builds full address string for API calls
+     */
+    private String buildFullAddress(String street, String city, String state, String zipCode, String country) {
+        return buildFullAddress(street, null, city, state, zipCode, country);
+    }
+
+    /**
+     * Builds full address string for API calls with barangay support
+     * Optimized for Philippine addresses but works internationally
+     */
+    private String buildFullAddress(String street, String barangay, String city, String state, String zipCode,
+            String country) {
+        StringBuilder address = new StringBuilder();
+
+        // Street/House number
+        if (street != null && !street.trim().isEmpty()) {
+            address.append(street.trim());
+        }
+
+        // Barangay (for Philippine addresses)
+        if (barangay != null && !barangay.trim().isEmpty()) {
+            if (address.length() > 0)
+                address.append(", ");
+            address.append(barangay.trim());
+        }
+
+        // City
+        if (city != null && !city.trim().isEmpty()) {
+            if (address.length() > 0)
+                address.append(", ");
+            address.append(city.trim());
+        }
+
+        // State/Province
+        if (state != null && !state.trim().isEmpty()) {
+            if (address.length() > 0)
+                address.append(", ");
+            address.append(state.trim());
+        }
+
+        // ZIP/Postal Code
+        if (zipCode != null && !zipCode.trim().isEmpty()) {
+            if (address.length() > 0)
+                address.append(" ");
+            address.append(zipCode.trim());
+        }
+
+        // Country
+        if (country != null && !country.trim().isEmpty()) {
+            if (address.length() > 0)
+                address.append(", ");
+            address.append(country.trim());
+        }
+
+        return address.toString();
     }
 
     /**
@@ -56,52 +194,36 @@ public class AddressValidationService {
     }
 
     /**
-     * Validates ZIP code format (US format)
+     * Validates ZIP/Postal code format (International format)
+     * Supports various international postal code formats:
+     * - Philippines: 4 digits (e.g., 1000)
+     * - US: 5 digits or 5+4 (e.g., 12345, 12345-6789)
+     * - Canada: Letter-digit-letter digit-letter-digit (e.g., K1A 0A9)
+     * - UK: Various formats (e.g., SW1A 1AA)
      */
     private boolean isValidZipCode(String zipCode) {
         if (zipCode == null)
             return false;
-        String cleaned = zipCode.replaceAll("[^0-9-]", "");
-        return cleaned.matches("^\\d{5}(-\\d{4})?$");
+        String cleaned = zipCode.trim();
+        // Allow 3-10 characters with letters, numbers, spaces, and hyphens
+        return cleaned.matches("^[A-Za-z0-9\\s\\-]{3,10}$");
     }
 
     /**
-     * Validates US state abbreviations
+     * Validates state/province/region names (International)
+     * For international compatibility, we accept any reasonable state/province name
+     * instead of restricting to US states only
      */
     private boolean isValidState(String state) {
         if (state == null)
             return false;
-        String upperState = state.trim().toUpperCase();
+        String trimmed = state.trim();
 
-        // US State abbreviations
-        String[] validStates = {
-                "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
-                "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
-                "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
-                "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
-                "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
-        };
-
-        for (String validState : validStates) {
-            if (validState.equals(upperState)) {
-                return true;
-            }
-        }
-        return false;
+        // Allow any state/province name that's:
+        // - 2-50 characters long
+        // - Contains only letters, spaces, periods, and hyphens
+        // This covers US states, Philippine provinces, Canadian provinces, etc.
+        return trimmed.matches("^[A-Za-z\\s\\.\\-]{2,50}$");
     }
 
-    /**
-     * Future method for actual API integration
-     */
-    @SuppressWarnings("unused")
-    private Mono<Boolean> callExternalAddressAPI(String street, String city, String state, String zipCode) {
-        // This would be implemented when integrating with actual address validation
-        // service
-        // Example with USPS or Google Maps API
-        return webClient.get() // Using webClient here to avoid unused field warning
-                .retrieve()
-                .bodyToMono(Boolean.class)
-                .timeout(Duration.ofSeconds(5))
-                .onErrorReturn(false);
-    }
 }

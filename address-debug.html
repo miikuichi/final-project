@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Address Validation Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 200px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #cce7ff;
+            border: 1px solid #99d6ff;
+            color: #004080;
+        }
+        .formatted-address {
+            background: #fff3cd;
+            border: 1px solid #ffeb9c;
+            color: #856404;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Address Validation Debug Tool</h1>
+    
+    <div class="test-section">
+        <h3>Test Address Formatting</h3>
+        <p>Enter address components to see how they're formatted for the Google Maps API:</p>
+        
+        <form id="addressForm">
+            <div class="form-group">
+                <label>House/Street:</label>
+                <input type="text" id="house" value="123 Rizal Street" placeholder="e.g., 123 Rizal Street">
+            </div>
+            <div class="form-group">
+                <label>Barangay:</label>
+                <input type="text" id="barangay" value="San Antonio" placeholder="e.g., San Antonio">
+            </div>
+            <div class="form-group">
+                <label>City:</label>
+                <input type="text" id="city" value="Makati City" placeholder="e.g., Makati City">
+            </div>
+            <div class="form-group">
+                <label>Province:</label>
+                <input type="text" id="province" value="Metro Manila" placeholder="e.g., Metro Manila">
+            </div>
+            <div class="form-group">
+                <label>ZIP Code:</label>
+                <input type="text" id="zip" value="1223" placeholder="e.g., 1223">
+            </div>
+            <div class="form-group">
+                <label>Country:</label>
+                <select id="country">
+                    <option value="PH" selected>Philippines</option>
+                    <option value="US">United States</option>
+                    <option value="CA">Canada</option>
+                    <option value="GB">United Kingdom</option>
+                </select>
+            </div>
+            <button type="button" onclick="testAddressFormatting()">Test Address Formatting</button>
+            <button type="button" onclick="testEmployeeCreation()">Test Full Employee Creation</button>
+        </form>
+        
+        <div id="formattingResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Quick Address Tests</h3>
+        <button onclick="testMakatiAddress()">Test Makati Address</button>
+        <button onclick="testCebuAddress()">Test Cebu Address</button>
+        <button onclick="testBGCAddress()">Test BGC Address</button>
+        <button onclick="testMinimalAddress()">Test Minimal Address</button>
+        <div id="quickTestResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Backend Health</h3>
+        <button onclick="checkBackendHealth()">Check Backend Health</button>
+        <div id="healthResult" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+
+        async function testAddressFormatting() {
+            const house = document.getElementById('house').value;
+            const barangay = document.getElementById('barangay').value;
+            const city = document.getElementById('city').value;
+            const province = document.getElementById('province').value;
+            const zip = document.getElementById('zip').value;
+            const country = document.getElementById('country').value;
+            
+            const resultDiv = document.getElementById('formattingResult');
+            
+            try {
+                const params = new URLSearchParams({
+                    house: house || '',
+                    barangay: barangay || '',
+                    city: city || '',
+                    province: province || '',
+                    zip: zip || '',
+                    country: country || 'PH'
+                });
+                
+                const response = await fetch(`${API_BASE}/health/address/test?${params}`);
+                const data = await response.json();
+                
+                resultDiv.className = `result ${response.ok ? 'info' : 'error'}`;
+                resultDiv.innerHTML = `
+                    <strong>Address Components:</strong>
+                    ${JSON.stringify(data.components, null, 2)}
+                    
+                    <div class="formatted-address">
+                    <strong>Formatted Address:</strong>
+                    "${data.formattedAddress}"
+                    </div>
+                    
+                    <strong>Google Maps API URL:</strong>
+                    <a href="${data.googleMapsUrl}" target="_blank">Test in Google Maps</a>
+                `;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function testEmployeeCreation() {
+            const house = document.getElementById('house').value;
+            const barangay = document.getElementById('barangay').value;
+            const city = document.getElementById('city').value;
+            const province = document.getElementById('province').value;
+            const zip = document.getElementById('zip').value;
+            const country = document.getElementById('country').value;
+            
+            const resultDiv = document.getElementById('formattingResult');
+            
+            try {
+                const testEmployee = {
+                    firstName: "Test",
+                    lastName: "Employee",
+                    email: `test.employee.${Date.now()}@company.com`,
+                    dateHired: "2024-01-01",
+                    department: "IT",
+                    position: "Software Developer",
+                    addressHouse: house,
+                    addressBarangay: barangay,
+                    addressCity: city,
+                    addressProvince: province,
+                    addressZip: zip,
+                    addressCountry: country
+                };
+
+                console.log('Testing employee creation with address:', testEmployee);
+
+                const response = await fetch(`${API_BASE}/employees`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testEmployee)
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.className = `result ${response.ok ? 'success' : 'error'}`;
+                resultDiv.innerHTML = `
+                    <strong>Employee Creation Result:</strong>
+                    Status: ${response.status}
+                    
+                    ${JSON.stringify(data, null, 2)}
+                `;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Network Error: ${error.message}`;
+            }
+        }
+
+        async function testMakatiAddress() {
+            document.getElementById('house').value = '6750 Ayala Avenue';
+            document.getElementById('barangay').value = 'San Lorenzo';
+            document.getElementById('city').value = 'Makati City';
+            document.getElementById('province').value = 'Metro Manila';
+            document.getElementById('zip').value = '1226';
+            document.getElementById('country').value = 'PH';
+            await testEmployeeCreation();
+        }
+
+        async function testCebuAddress() {
+            document.getElementById('house').value = '1 Colon Street';
+            document.getElementById('barangay').value = 'Poblacion Ward I';
+            document.getElementById('city').value = 'Cebu City';
+            document.getElementById('province').value = 'Cebu';
+            document.getElementById('zip').value = '6000';
+            document.getElementById('country').value = 'PH';
+            await testEmployeeCreation();
+        }
+
+        async function testBGCAddress() {
+            document.getElementById('house').value = '26th Street';
+            document.getElementById('barangay').value = 'Fort Bonifacio';
+            document.getElementById('city').value = 'Taguig City';
+            document.getElementById('province').value = 'Metro Manila';
+            document.getElementById('zip').value = '1634';
+            document.getElementById('country').value = 'PH';
+            await testEmployeeCreation();
+        }
+
+        async function testMinimalAddress() {
+            document.getElementById('house').value = 'Test Street';
+            document.getElementById('barangay').value = '';
+            document.getElementById('city').value = 'Test City';
+            document.getElementById('province').value = 'Test Province';
+            document.getElementById('zip').value = '1000';
+            document.getElementById('country').value = 'PH';
+            await testEmployeeCreation();
+        }
+
+        async function checkBackendHealth() {
+            const resultDiv = document.getElementById('healthResult');
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                resultDiv.className = `result ${response.ok ? 'success' : 'error'}`;
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Load Makati address by default
+        window.onload = function() {
+            testAddressFormatting();
+        };
+    </script>
+</body>
+</html>

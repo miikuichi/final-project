@@ -173,11 +173,18 @@ public class ModifyRequestController {
         POSITION_SALARIES.put("Business Analyst", 65000.0);
         POSITION_SALARIES.put("Quality Assurance", 55000.0);
 
+        // Basic personal information
         if (updatedData.containsKey("firstName")) {
             employee.setFirstName((String) updatedData.get("firstName"));
         }
         if (updatedData.containsKey("lastName")) {
             employee.setLastName((String) updatedData.get("lastName"));
+        }
+        if (updatedData.containsKey("middleInitial")) {
+            employee.setMiddleInitial((String) updatedData.get("middleInitial"));
+        }
+        if (updatedData.containsKey("suffix")) {
+            employee.setSuffix((String) updatedData.get("suffix"));
         }
         if (updatedData.containsKey("email")) {
             employee.setEmail((String) updatedData.get("email"));
@@ -185,6 +192,38 @@ public class ModifyRequestController {
         if (updatedData.containsKey("cellphone")) {
             employee.setCellphone((String) updatedData.get("cellphone"));
         }
+
+        // Date fields
+        if (updatedData.containsKey("birthday")) {
+            Object birthdayData = updatedData.get("birthday");
+            if (birthdayData != null && !birthdayData.toString().isEmpty()) {
+                try {
+                    employee.setBirthday(java.time.LocalDate.parse(birthdayData.toString()));
+                } catch (Exception e) {
+                    System.err.println("Error parsing birthday: " + e.getMessage());
+                }
+            }
+        }
+        if (updatedData.containsKey("dateHired")) {
+            Object dateHiredData = updatedData.get("dateHired");
+            if (dateHiredData != null && !dateHiredData.toString().isEmpty()) {
+                try {
+                    employee.setDateHired(java.time.LocalDate.parse(dateHiredData.toString()));
+                } catch (Exception e) {
+                    System.err.println("Error parsing dateHired: " + e.getMessage());
+                }
+            }
+        }
+
+        // Optional personal information
+        if (updatedData.containsKey("bloodType")) {
+            employee.setBloodType((String) updatedData.get("bloodType"));
+        }
+        if (updatedData.containsKey("religion")) {
+            employee.setReligion((String) updatedData.get("religion"));
+        }
+
+        // Employment information
         if (updatedData.containsKey("department")) {
             employee.setDepartment((String) updatedData.get("department"));
         }
@@ -197,6 +236,27 @@ public class ModifyRequestController {
                 employee.setSalary(salary);
             }
         }
+
+        // Address information
+        if (updatedData.containsKey("addressHouse")) {
+            employee.setAddressHouse((String) updatedData.get("addressHouse"));
+        }
+        if (updatedData.containsKey("addressBarangay")) {
+            employee.setAddressBarangay((String) updatedData.get("addressBarangay"));
+        }
+        if (updatedData.containsKey("addressCity")) {
+            employee.setAddressCity((String) updatedData.get("addressCity"));
+        }
+        if (updatedData.containsKey("addressProvince")) {
+            employee.setAddressProvince((String) updatedData.get("addressProvince"));
+        }
+        if (updatedData.containsKey("addressZip")) {
+            employee.setAddressZip((String) updatedData.get("addressZip"));
+        }
+        if (updatedData.containsKey("addressCountry")) {
+            employee.setAddressCountry((String) updatedData.get("addressCountry"));
+        }
+
         // Note: We don't apply salary changes directly from updatedData
         // since they should be auto-calculated based on position
     }
