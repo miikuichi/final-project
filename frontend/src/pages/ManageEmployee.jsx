@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useRole } from "../components/RoleContext";
 import { AdminNavBar, HRNavBar } from "../components/NavBar";
 import SearchBar from "../components/SearchBar";
+import Modal from "../components/Modal";
+import { useModal } from "../components/useModal";
 import "./ManageEmployee.css";
 
 export default function ManageEmployee() {
@@ -11,6 +13,7 @@ export default function ManageEmployee() {
   const [selected, setSelected] = useState(null);
   const [editEmp, setEditEmp] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { isOpen, modalConfig, hideModal, showSuccess, showError, showWarning, showConfirm } = useModal();
 
   // Fetch employees from backend
   const refreshEmployees = async () => {
@@ -37,26 +40,30 @@ export default function ManageEmployee() {
 
   // Delete employee
   const deleteEmployee = async (id) => {
-    if (window.confirm("Are you sure you want to delete this employee?")) {
-      try {
-        const response = await fetch(
-          `http://localhost:8080/api/employees/${id}`,
-          {
-            method: "DELETE",
+    showConfirm(
+      "Are you sure you want to delete this employee? This action cannot be undone.",
+      "Confirm Delete",
+      async () => {
+        try {
+          const response = await fetch(
+            `http://localhost:8080/api/employees/${id}`,
+            {
+              method: "DELETE",
+            }
+          );
+          if (response.ok) {
+            showSuccess("Employee deleted successfully!");
+            refreshEmployees();
+            setSelected(null);
+          } else {
+            showError("Failed to delete employee");
           }
-        );
-        if (response.ok) {
-          alert("Employee deleted successfully!");
-          refreshEmployees();
-          setSelected(null);
-        } else {
-          alert("Failed to delete employee");
+        } catch (error) {
+          console.error("Error deleting employee:", error);
+          showError("Error deleting employee");
         }
-      } catch (error) {
-        console.error("Error deleting employee:", error);
-        alert("Error deleting employee");
       }
-    }
+    );
   };
 
   // Submit modify request (for HR users)
@@ -87,17 +94,17 @@ export default function ManageEmployee() {
       );
 
       if (response.ok) {
-        alert(
+        showSuccess(
           "Modify request submitted successfully! Waiting for admin approval."
         );
         setEditEmp(null);
         setSelected(null);
       } else {
-        alert("Failed to submit modify request");
+        showError("Failed to submit modify request");
       }
     } catch (error) {
       console.error("Error submitting modify request:", error);
-      alert("Error submitting modify request");
+      showError("Error submitting modify request");
     }
   };
 
@@ -115,16 +122,16 @@ export default function ManageEmployee() {
         }
       );
       if (response.ok) {
-        alert("Employee updated successfully!");
+        showSuccess("Employee updated successfully!");
         refreshEmployees();
         setEditEmp(null);
         setSelected(null);
       } else {
-        alert("Failed to update employee");
+        showError("Failed to update employee");
       }
     } catch (error) {
       console.error("Error updating employee:", error);
-      alert("Error updating employee");
+      showError("Error updating employee");
     }
   };
 
@@ -251,6 +258,7 @@ export default function ManageEmployee() {
                   employees.find((e) => e.id === editEmp.id) || editEmp
                 }
                 userRole={role}
+                showWarning={showWarning}
                 onSave={(updatedEmployee, reason) => {
                   const originalEmployee =
                     employees.find((e) => e.id === updatedEmployee.id) ||
@@ -274,6 +282,12 @@ export default function ManageEmployee() {
           </>
         )}
       </div>
+      
+      <Modal
+        isOpen={isOpen}
+        onClose={hideModal}
+        {...modalConfig}
+      />
     </div>
   );
 }
@@ -283,6 +297,7 @@ function EditEmployeeModal({
   employee,
   originalEmployee,
   userRole,
+  showWarning,
   onSave,
   onCancel,
   onUpdate,
@@ -355,7 +370,7 @@ function EditEmployeeModal({
 
     // For HR users, reason is required
     if (userRole === "hr" && !reason.trim()) {
-      alert("Please provide a reason for the changes.");
+      showWarning("Please provide a reason for the changes.");
       return;
     }
 

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRole } from "../components/RoleContext";
 import { AdminNavBar, HRNavBar } from "../components/NavBar";
+import Modal from "../components/Modal";
+import { useModal } from "../components/useModal";
 import "./AddEmployee.css";
 
 const initialState = {
@@ -33,6 +35,7 @@ export default function AddEmployee() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { role } = useRole();
+  const { isOpen, modalConfig, hideModal, showSuccess, showError, showWarning } = useModal();
 
   // Load departments and positions from backend (hardcoded)
   useEffect(() => {
@@ -164,7 +167,7 @@ export default function AddEmployee() {
 
     if (!validateForm()) {
       console.log("Form validation failed, errors:", errors);
-      alert("Please fix the validation errors before submitting.");
+      showWarning("Please fix the validation errors before submitting.");
       return;
     }
 
@@ -188,17 +191,17 @@ export default function AddEmployee() {
       if (response.ok) {
         const result = await response.json();
         console.log("Employee created successfully:", result);
-        alert("Employee added successfully!");
+        showSuccess("Employee added successfully!");
         setForm(initialState);
         navigate("/manage-employee");
       } else {
         const errorData = await response.json();
         console.error("Server error:", errorData);
-        alert(`Error: ${errorData.error || "Failed to add employee"}`);
+        showError(`Error: ${errorData.error || "Failed to add employee"}`);
       }
     } catch (error) {
       console.error("Network error:", error);
-      alert("Network error. Please check your connection and try again.");
+      showError("Network error. Please check your connection and try again.");
     } finally {
       setIsSubmitting(false);
       console.log("Form submission completed");
@@ -581,6 +584,12 @@ export default function AddEmployee() {
           </div>
         </form>
       </div>
+      
+      <Modal
+        isOpen={isOpen}
+        onClose={hideModal}
+        {...modalConfig}
+      />
     </div>
   );
 }

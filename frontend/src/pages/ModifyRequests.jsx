@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useRole } from "../components/RoleContext";
 import { AdminNavBar } from "../components/NavBar";
+import Modal from "../components/Modal";
+import { useModal } from "../components/useModal";
 import "./ManageTickets.css"; // Use ticket styles for consistency
 
 export default function ModifyRequests() {
@@ -9,6 +11,7 @@ export default function ModifyRequests() {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loading, setLoading] = useState(false);
   const [adminComments, setAdminComments] = useState("");
+  const { isOpen, modalConfig, hideModal, showSuccess, showError, showWarning } = useModal();
 
   // Fetch requests from backend
   const fetchRequests = async () => {
@@ -92,23 +95,23 @@ export default function ModifyRequests() {
       );
 
       if (response.ok) {
-        alert("Request approved successfully!");
+        showSuccess("Request approved successfully!");
         fetchRequests(); // Refresh the list
         setSelectedRequest(null);
         setAdminComments("");
       } else {
-        alert("Failed to approve request");
+        showError("Failed to approve request");
       }
     } catch (error) {
       console.error("Error approving request:", error);
-      alert("Error approving request");
+      showError("Error approving request");
     }
   };
 
   // Reject request
   const rejectRequest = async (requestId) => {
     if (!adminComments.trim()) {
-      alert("Please provide a reason for rejection.");
+      showWarning("Please provide a reason for rejection.");
       return;
     }
 
@@ -125,16 +128,16 @@ export default function ModifyRequests() {
       );
 
       if (response.ok) {
-        alert("Request rejected successfully!");
+        showSuccess("Request rejected successfully!");
         fetchRequests(); // Refresh the list
         setSelectedRequest(null);
         setAdminComments("");
       } else {
-        alert("Failed to reject request");
+        showError("Failed to reject request");
       }
     } catch (error) {
       console.error("Error rejecting request:", error);
-      alert("Error rejecting request");
+      showError("Error rejecting request");
     }
   };
 
@@ -532,6 +535,12 @@ export default function ModifyRequests() {
           </div>
         )}
       </div>
+      
+      <Modal
+        isOpen={isOpen}
+        onClose={hideModal}
+        {...modalConfig}
+      />
     </div>
   );
 }
