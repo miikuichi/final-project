@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState } from "react";
-import "./App.css";
+import "./styles.css";
 import LandingPage from "./pages/LandingPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import HRDashboard from "./pages/HRDashboard";
@@ -13,6 +13,7 @@ import TrackTickets from "./pages/TrackTickets";
 import ModifyRequests from "./pages/ModifyRequests";
 import { TicketProvider } from "./components/TicketContext";
 import { RoleProvider } from "./components/RoleContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import AddEmployee from "./pages/AddEmployee";
 import SignUp from "./pages/SignUp";
 
@@ -23,16 +24,85 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/hr" element={<HRDashboard />} />
-            <Route path="/manage-employee" element={<ManageEmployee />} />
-            <Route path="/payroll" element={<Payroll />} />
-            <Route path="/issue-ticket" element={<IssueTicket />} />
-            <Route path="/manage-tickets" element={<ManageTickets />} />
-            <Route path="/track-tickets" element={<TrackTickets />} />
-            <Route path="/modify-requests" element={<ModifyRequests />} />
-            <Route path="/add-employee" element={<AddEmployee />} />
             <Route path="/signup" element={<SignUp />} />
+
+            {/* Admin-only routes */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/modify-requests"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <ModifyRequests />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* HR-only routes */}
+            <Route
+              path="/hr"
+              element={
+                <ProtectedRoute allowedRoles={["hr"]}>
+                  <HRDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Routes accessible by both admin and hr */}
+            <Route
+              path="/manage-employee"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "hr"]}>
+                  <ManageEmployee />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payroll"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "hr"]}>
+                  <Payroll />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/issue-ticket"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "hr"]}>
+                  <IssueTicket />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/manage-tickets"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "hr"]}>
+                  <ManageTickets />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/track-tickets"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "hr"]}>
+                  <TrackTickets />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/add-employee"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "hr"]}>
+                  <AddEmployee />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </Router>
       </TicketProvider>

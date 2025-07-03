@@ -1,7 +1,8 @@
 // NavBar for Login, Admin, and HR Employee
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./NavBar.css";
+import Button from "./Button";
+import "../styles.css";
 
 export function LoginNavBar({ onHome, onIssueTicket }) {
   return (
@@ -10,8 +11,8 @@ export function LoginNavBar({ onHome, onIssueTicket }) {
         <div className="navbar-logo">PayrollPro</div>
       </div>
       <div className="navbar-nav">
-        <button onClick={onHome}>Home</button>
-        <button onClick={onIssueTicket}>Issue Ticket</button>
+        <Button onClick={onHome} label="Home" />
+        <Button onClick={onIssueTicket} label="Issue Ticket" />
       </div>
     </nav>
   );
@@ -22,21 +23,40 @@ export function AdminNavBar({ onHome, onLogout }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/users/session", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => setIsLoggedIn(!!data && !!data.username))
-      .catch(() => setIsLoggedIn(false));
+    let isMounted = true;
+
+    const checkSession = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/users/session", {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (isMounted) {
+          setIsLoggedIn(!!data && !!data.username);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setIsLoggedIn(false);
+        }
+      }
+    };
+
+    checkSession();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const handleHome = () => {
+  const handleHome = React.useCallback(() => {
     if (onHome) {
       onHome();
     } else {
       navigate("/admin");
     }
-  };
+  }, [onHome, navigate]);
 
-  const handleLogout = async () => {
+  const handleLogout = React.useCallback(async () => {
     if (onLogout) {
       onLogout();
     } else {
@@ -52,7 +72,7 @@ export function AdminNavBar({ onHome, onLogout }) {
         navigate("/");
       }
     }
-  };
+  }, [onLogout, navigate]);
 
   return (
     <nav className="navbar admin-navbar">
@@ -60,11 +80,13 @@ export function AdminNavBar({ onHome, onLogout }) {
         <div className="navbar-logo">PayrollPro</div>
       </div>
       <div className="navbar-nav">
-        <button onClick={handleHome}>Home</button>
+        <Button onClick={handleHome} label="Home" />
         {isLoggedIn && (
-          <button className="logout-btn" onClick={handleLogout}>
-            Log out
-          </button>
+          <Button
+            className="logout-btn"
+            onClick={handleLogout}
+            label="Log out"
+          />
         )}
       </div>
     </nav>
@@ -76,13 +98,32 @@ export function HRNavBar({ onHome, onIssueTicket, onLogout }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/users/session", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => setIsLoggedIn(!!data && !!data.username))
-      .catch(() => setIsLoggedIn(false));
+    let isMounted = true;
+
+    const checkSession = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/users/session", {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (isMounted) {
+          setIsLoggedIn(!!data && !!data.username);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setIsLoggedIn(false);
+        }
+      }
+    };
+
+    checkSession();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const handleHome = async () => {
+  const handleHome = React.useCallback(async () => {
     if (onHome) {
       onHome();
     } else {
@@ -100,17 +141,17 @@ export function HRNavBar({ onHome, onIssueTicket, onLogout }) {
         navigate("/");
       }
     }
-  };
+  }, [onHome, navigate]);
 
-  const handleIssueTicket = () => {
+  const handleIssueTicket = React.useCallback(() => {
     if (onIssueTicket) {
       onIssueTicket();
     } else {
       navigate("/issue-ticket");
     }
-  };
+  }, [onIssueTicket, navigate]);
 
-  const handleLogout = async () => {
+  const handleLogout = React.useCallback(async () => {
     if (onLogout) {
       onLogout();
     } else {
@@ -126,7 +167,7 @@ export function HRNavBar({ onHome, onIssueTicket, onLogout }) {
         navigate("/");
       }
     }
-  };
+  }, [onLogout, navigate]);
 
   return (
     <nav className="navbar hr-navbar">
@@ -134,12 +175,14 @@ export function HRNavBar({ onHome, onIssueTicket, onLogout }) {
         <div className="navbar-logo">PayrollPro</div>
       </div>
       <div className="navbar-nav">
-        <button onClick={handleHome}>Home</button>
-        <button onClick={handleIssueTicket}>Issue Ticket</button>
+        <Button onClick={handleHome} label="Home" />
+        <Button onClick={handleIssueTicket} label="Issue Ticket" />
         {isLoggedIn && (
-          <button className="logout-btn" onClick={handleLogout}>
-            Log out
-          </button>
+          <Button
+            className="logout-btn"
+            onClick={handleLogout}
+            label="Log out"
+          />
         )}
       </div>
     </nav>

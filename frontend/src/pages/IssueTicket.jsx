@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { HRNavBar } from "../components/NavBar";
 import { useTickets } from "../components/TicketContext";
-import "./IssueTicket.css";
-import "./AddEmployee.css";
+import Button from "../components/Button";
+import "../styles.css";
 
 const categories = ["Log In error", "Forgot Password", "Application Error"];
 
@@ -167,20 +167,18 @@ export default function IssueTicket() {
             )}
 
             <div className="form-actions">
-              <button
+              <Button
                 type="button"
                 className="btn-cancel"
                 onClick={() => (isLoggedIn ? navigate("/hr") : navigate("/"))}
-              >
-                {isLoggedIn ? "Home" : "Cancel"}
-              </button>
-              <button
+                label={isLoggedIn ? "Home" : "Cancel"}
+              />
+              <Button
                 type="submit"
                 className="btn-submit"
                 disabled={isSubmitting}
-              >
-                {isSubmitting ? "Submitting..." : "Submit Ticket"}
-              </button>
+                label={isSubmitting ? "Submitting..." : "Submit Ticket"}
+              />
             </div>
           </div>
         </form>

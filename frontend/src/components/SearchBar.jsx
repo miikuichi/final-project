@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./SearchBar.css";
+import "../styles.css";
 
 const SearchBar = ({
   placeholder = "Search...",

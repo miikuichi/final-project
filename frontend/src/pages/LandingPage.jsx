@@ -3,11 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { LoginNavBar } from "../components/NavBar";
 import { useRole } from "../components/RoleContext";
 import Button from "../components/Button";
-import "./LandingPage.css";
+import "../styles.css";
+import LoginForm from "../components/LoginForm";
 
 export default function LandingPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -30,8 +29,7 @@ export default function LandingPage() {
       });
   }, [loginAs, navigate]);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (formData) => {
     setError("");
     setIsLoading(true);
 
@@ -42,7 +40,10 @@ export default function LandingPage() {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+        }),
       });
 
       const data = await response.json();
@@ -73,54 +74,12 @@ export default function LandingPage() {
       />
       <div className="landing-content">
         <div className="login-container">
-          <h2>PayrollPro Login</h2>
-          <p>Sign in to access your account</p>
-
-          <form onSubmit={handleLogin} className="login-form">
-            <div className="form-group">
-              <label>Username *</label>
-              <input
-                type="text"
-                placeholder="Enter username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Password *</label>
-              <input
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
-
-            {error && <div className="error-alert">{error}</div>}
-
-            <div className="form-actions">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={handleSignup}
-                disabled={isLoading}
-              >
-                Sign Up
-              </button>
-              <button
-                type="submit"
-                className="btn-primary"
-                disabled={isLoading}
-              >
-                {isLoading ? "Logging in..." : "Log In"}
-              </button>
-            </div>
-          </form>
+          <LoginForm
+            onSubmit={handleLogin}
+            isSubmitting={isLoading}
+            error={error}
+            onSignUp={handleSignup}
+          />
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { HRNavBar } from "../components/NavBar";
 import Button from "../components/Button";
-import "./Dashboard.css";
+import "../styles.css";
 
 export default function HRDashboard() {
   const navigate = useNavigate();

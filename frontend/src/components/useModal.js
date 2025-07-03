@@ -14,7 +14,6 @@ export const useModal = () => {
     setModalConfig({});
   };
 
-  // Convenience methods for different types
   const showSuccess = (message, title = 'Success') => {
     showModal({
       type: 'success',

@@ -4,7 +4,7 @@ import { AdminNavBar, HRNavBar } from "../components/NavBar";
 import Button from "../components/Button";
 import SalaryCard from "../components/SalaryCard";
 import SearchBar from "../components/SearchBar";
-import "./Payroll.css";
+import "../styles.css";
 
 export default function Payroll() {
   const { role } = useRole();
@@ -648,7 +648,7 @@ export default function Payroll() {
                     {errors.submit && (
                       <span className="error-message">{errors.submit}</span>
                     )}
-                    <button
+                    <Button
                       type="button"
                       className="btn-submit"
                       onClick={handleSubmit}
@@ -656,9 +656,10 @@ export default function Payroll() {
                         isSubmitting || !salaryPeriod.from || !salaryPeriod.to
                       }
                       style={{ width: "100%" }}
-                    >
-                      {isSubmitting ? "Submitting..." : "Submit Salary Period"}
-                    </button>
+                      label={
+                        isSubmitting ? "Submitting..." : "Submit Salary Period"
+                      }
+                    />
                   </div>
                 </div>
 

@@ -4,7 +4,9 @@ import { AdminNavBar, HRNavBar } from "../components/NavBar";
 import SearchBar from "../components/SearchBar";
 import Modal from "../components/Modal";
 import { useModal } from "../components/useModal";
-import "./ManageEmployee.css";
+import EmployeeForm from "../components/EmployeeForm";
+import Button from "../components/Button";
+import "../styles.css";
 
 export default function ManageEmployee() {
   const { role } = useRole();
@@ -13,7 +15,17 @@ export default function ManageEmployee() {
   const [selected, setSelected] = useState(null);
   const [editEmp, setEditEmp] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { isOpen, modalConfig, hideModal, showSuccess, showError, showWarning, showConfirm } = useModal();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
+  const {
+    isOpen,
+    modalConfig,
+    hideModal,
+    showSuccess,
+    showError,
+    showWarning,
+    showConfirm,
+  } = useModal();
 
   // Fetch employees from backend
   const refreshEmployees = async () => {
@@ -73,6 +85,8 @@ export default function ManageEmployee() {
     reason
   ) => {
     try {
+      setIsSubmitting(true);
+      setFormErrors({});
       const modifyRequest = {
         employeeId: originalEmployee.id,
         originalData: JSON.stringify(originalEmployee),
@@ -100,17 +114,22 @@ export default function ManageEmployee() {
         setEditEmp(null);
         setSelected(null);
       } else {
-        showError("Failed to submit modify request");
+        const errorText = await response.text();
+        showError(errorText || "Failed to submit modify request");
       }
     } catch (error) {
       console.error("Error submitting modify request:", error);
-      showError("Error submitting modify request");
+      showError("Network error. Please check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Direct update (for Admin users)
   const directUpdateEmployee = async (updatedEmployee) => {
     try {
+      setIsSubmitting(true);
+      setFormErrors({});
       const response = await fetch(
         `http://localhost:8080/api/employees/${updatedEmployee.id}`,
         {
@@ -127,11 +146,14 @@ export default function ManageEmployee() {
         setEditEmp(null);
         setSelected(null);
       } else {
-        showError("Failed to update employee");
+        const errorText = await response.text();
+        showError(errorText || "Failed to update employee");
       }
     } catch (error) {
       console.error("Error updating employee:", error);
-      showError("Error updating employee");
+      showError("Network error. Please check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -204,7 +226,7 @@ export default function ManageEmployee() {
                         </div>
                       </div>
                       <div className="employee-card-actions">
-                        <button
+                        <Button
                           style={{
                             background: "#3b82f6",
                             color: "#fff",
@@ -216,10 +238,9 @@ export default function ManageEmployee() {
                             fontSize: "0.9rem",
                           }}
                           onClick={() => setSelected(emp)}
-                        >
-                          View Details
-                        </button>
-                        <button
+                          label="View Details"
+                        />
+                        <Button
                           style={{
                             background: "#ef4444",
                             color: "#fff",
@@ -230,9 +251,8 @@ export default function ManageEmployee() {
                             fontSize: "0.9rem",
                           }}
                           onClick={() => deleteEmployee(emp.id)}
-                        >
-                          Delete
-                        </button>
+                          label="Delete"
+                        />
                       </div>
                     </div>
                   </div>
@@ -259,6 +279,8 @@ export default function ManageEmployee() {
                 }
                 userRole={role}
                 showWarning={showWarning}
+                isSubmitting={isSubmitting}
+                errors={formErrors}
                 onSave={(updatedEmployee, reason) => {
                   const originalEmployee =
                     employees.find((e) => e.id === updatedEmployee.id) ||
@@ -282,12 +304,8 @@ export default function ManageEmployee() {
           </>
         )}
       </div>
-      
-      <Modal
-        isOpen={isOpen}
-        onClose={hideModal}
-        {...modalConfig}
-      />
+
+      <Modal isOpen={isOpen} onClose={hideModal} {...modalConfig} />
     </div>
   );
 }
@@ -301,715 +319,101 @@ function EditEmployeeModal({
   onSave,
   onCancel,
   onUpdate,
+  isSubmitting = false,
+  errors = {},
 }) {
   const [reason, setReason] = useState("");
 
-  const [departments] = useState({
-    IT: [
-      "Software Developer",
-      "System Administrator",
-      "IT Support",
-      "DevOps Engineer",
-    ],
-    HR: ["HR Manager", "Recruiter", "HR Assistant", "Training Coordinator"],
-    Finance: ["Accountant", "Financial Analyst", "Finance Manager", "Auditor"],
-    Marketing: [
-      "Marketing Manager",
-      "Content Creator",
-      "Digital Marketer",
-      "Brand Manager",
-    ],
-    Operations: [
-      "Operations Manager",
-      "Project Manager",
-      "Business Analyst",
-      "Quality Assurance",
-    ],
-  });
-
-  // Salary mapping based on position
-  const positionSalaries = {
-    "Software Developer": 75000,
-    "System Administrator": 70000,
-    "IT Support": 45000,
-    "DevOps Engineer": 85000,
-    "HR Manager": 80000,
-    Recruiter: 55000,
-    "HR Assistant": 40000,
-    "Training Coordinator": 50000,
-    Accountant: 60000,
-    "Financial Analyst": 65000,
-    "Finance Manager": 90000,
-    Auditor: 70000,
-    "Marketing Manager": 75000,
-    "Content Creator": 50000,
-    "Digital Marketer": 55000,
-    "Brand Manager": 70000,
-    "Operations Manager": 85000,
-    "Project Manager": 80000,
-    "Business Analyst": 65000,
-    "Quality Assurance": 55000,
-  };
-
-  const handleInputChange = (field, value) => {
-    const updatedEmployee = { ...employee, [field]: value };
-
-    // Auto-assign salary when position changes
-    if (field === "position" && value) {
-      const salary = positionSalaries[value];
-      if (salary) {
-        updatedEmployee.salary = salary;
-      }
-    }
-
-    onUpdate(updatedEmployee);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
+  const handleSubmit = (formData) => {
     // For HR users, reason is required
     if (userRole === "hr" && !reason.trim()) {
       showWarning("Please provide a reason for the changes.");
       return;
     }
 
-    onSave(employee, reason);
+    onSave(formData, reason);
+  };
+
+  const handleReasonChange = (e) => {
+    setReason(e.target.value);
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        background: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: "8px",
-          padding: "2rem",
-          maxWidth: "500px",
-          width: "90%",
-          maxHeight: "80vh",
-          overflowY: "auto",
-        }}
-      >
-        <h3 style={{ marginTop: 0, textAlign: "center" }}>Edit Employee</h3>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              First Name:
-            </label>
-            <input
-              type="text"
-              value={employee.firstName || ""}
-              onChange={(e) => handleInputChange("firstName", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-              required
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Last Name:
-            </label>
-            <input
-              type="text"
-              value={employee.lastName || ""}
-              onChange={(e) => handleInputChange("lastName", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-              required
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Middle Initial:
-            </label>
-            <input
-              type="text"
-              value={employee.middleInitial || ""}
-              onChange={(e) =>
-                handleInputChange("middleInitial", e.target.value)
-              }
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-              maxLength={10}
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Suffix:
-            </label>
-            <input
-              type="text"
-              value={employee.suffix || ""}
-              onChange={(e) => handleInputChange("suffix", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-              maxLength={20}
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Email:
-            </label>
-            <input
-              type="email"
-              value={employee.email || ""}
-              onChange={(e) => handleInputChange("email", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-              required
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Phone:
-            </label>
-            <input
-              type="text"
-              value={employee.cellphone || ""}
-              onChange={(e) => handleInputChange("cellphone", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-              maxLength={20}
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Birthday:
-            </label>
-            <input
-              type="date"
-              value={employee.birthday || ""}
-              onChange={(e) => handleInputChange("birthday", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Date Hired:
-            </label>
-            <input
-              type="date"
-              value={employee.dateHired || ""}
-              onChange={(e) => handleInputChange("dateHired", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-              required
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Blood Type:
-            </label>
-            <select
-              value={employee.bloodType || ""}
-              onChange={(e) => handleInputChange("bloodType", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-            >
-              <option value="">Select Blood Type</option>
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="AB+">AB+</option>
-              <option value="AB-">AB-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
-            </select>
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Religion:
-            </label>
-            <input
-              type="text"
-              value={employee.religion || ""}
-              onChange={(e) => handleInputChange("religion", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-              maxLength={100}
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Department:
-            </label>
-            <select
-              value={employee.department || ""}
-              onChange={(e) => handleInputChange("department", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-              required
-            >
-              <option value="">Select Department</option>
-              {Object.keys(departments).map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Position:
-            </label>
-            <select
-              value={employee.position || ""}
-              onChange={(e) => handleInputChange("position", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-              required
-            >
-              <option value="">Select Position</option>
-              {employee.department &&
-                departments[employee.department] &&
-                departments[employee.department].map((pos) => (
-                  <option key={pos} value={pos}>
-                    {pos}
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Salary (Auto-calculated):
-            </label>
-            <input
-              type="text"
-              value={`₱${employee.salary?.toLocaleString() || "0"}`}
-              readOnly
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                backgroundColor: "#f5f5f5",
-                color: "#666",
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "bold",
-              }}
-            >
-              Address:
-            </label>
-            <input
-              type="text"
-              placeholder="House/Unit/Street"
-              value={employee.addressHouse || ""}
-              onChange={(e) =>
-                handleInputChange("addressHouse", e.target.value)
-              }
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                marginBottom: "0.5rem",
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Barangay"
-              value={employee.addressBarangay || ""}
-              onChange={(e) =>
-                handleInputChange("addressBarangay", e.target.value)
-              }
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                marginBottom: "0.5rem",
-              }}
-            />
-            <input
-              type="text"
-              placeholder="City/Municipality"
-              value={employee.addressCity || ""}
-              onChange={(e) => handleInputChange("addressCity", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                marginBottom: "0.5rem",
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Province"
-              value={employee.addressProvince || ""}
-              onChange={(e) =>
-                handleInputChange("addressProvince", e.target.value)
-              }
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                marginBottom: "0.5rem",
-              }}
-            />
-            <input
-              type="text"
-              placeholder="ZIP Code"
-              value={employee.addressZip || ""}
-              onChange={(e) => {
-                // Only allow numbers like in AddEmployee form
-                const value = e.target.value.replace(/[^0-9]/g, "");
-                handleInputChange("addressZip", value);
-              }}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-                marginBottom: "0.5rem",
-              }}
-              maxLength={10}
-            />
-            <input
-              type="text"
-              placeholder="Country"
-              value={employee.addressCountry || ""}
-              onChange={(e) =>
-                handleInputChange("addressCountry", e.target.value)
-              }
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-              maxLength={100}
-            />
-          </div>
-
-          {userRole === "hr" && (
-            <div style={{ marginBottom: "1rem" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "0.5rem",
-                  fontWeight: "bold",
-                }}
-              >
-                Reason for Changes: *
-              </label>
-              <textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Please explain why these changes are needed..."
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                  minHeight: "80px",
-                  resize: "vertical",
-                }}
-                required
-              />
-            </div>
-          )}
-
-          <div
-            style={{
-              display: "flex",
-              gap: "1rem",
-              justifyContent: "flex-end",
-              marginTop: "2rem",
-            }}
-          >
-            <button
-              type="button"
-              onClick={onCancel}
-              style={{
-                background: "#6b7280",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                padding: "0.75rem 1.5rem",
-                cursor: "pointer",
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              style={{
-                background: "#3b82f6",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                padding: "0.75rem 1.5rem",
-                cursor: "pointer",
-              }}
-            >
-              {userRole === "hr" ? "Submit Request" : "Save Changes"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal isOpen={true} onClose={onCancel} title="Edit Employee">
+      <EmployeeForm
+        initialData={employee}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+        errors={errors}
+        showReasonField={userRole === "hr"}
+        reasonValue={reason}
+        onReasonChange={handleReasonChange}
+        submitButtonText={userRole === "hr" ? "Submit Request" : "Save Changes"}
+        cancelButtonText="Cancel"
+        onCancel={onCancel}
+      />
+    </Modal>
   );
 }
 
 // Employee Details Modal Component
 function EmployeeDetailsModal({ employee, onClose, onEdit }) {
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        background: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 1000,
-      }}
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Employee Details"
+      actions={
+        <div style={{ display: "flex", gap: "1rem" }}>
+          <Button
+            label="Edit Employee"
+            onClick={onEdit}
+            style={{
+              backgroundColor: "#10b981",
+              color: "#fff",
+            }}
+          />
+          <Button
+            label="Close"
+            onClick={onClose}
+            style={{
+              backgroundColor: "#6b7280",
+              color: "#fff",
+            }}
+          />
+        </div>
+      }
     >
       <div
         style={{
-          background: "#fff",
-          borderRadius: "8px",
-          padding: "2rem",
-          maxWidth: "600px",
-          width: "90%",
-          maxHeight: "80vh",
-          overflowY: "auto",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "1rem",
         }}
       >
-        <h3 style={{ marginTop: 0, textAlign: "center" }}>Employee Details</h3>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "1rem",
-          }}
-        >
-          <div>
-            <p>
-              <strong>Name:</strong> {employee.firstName} {employee.lastName}
-            </p>
-            <p>
-              <strong>Email:</strong> {employee.email}
-            </p>
-            <p>
-              <strong>Phone:</strong> {employee.cellphone || "N/A"}
-            </p>
-          </div>
-          <div>
-            <p>
-              <strong>Department:</strong> {employee.department}
-            </p>
-            <p>
-              <strong>Position:</strong> {employee.position}
-            </p>
-            <p>
-              <strong>Salary:</strong> ₱{employee.salary?.toLocaleString()}
-            </p>
-          </div>
+        <div>
+          <p>
+            <strong>Name:</strong> {employee.firstName} {employee.lastName}
+          </p>
+          <p>
+            <strong>Email:</strong> {employee.email}
+          </p>
+          <p>
+            <strong>Phone:</strong> {employee.cellphone || "N/A"}
+          </p>
         </div>
-        <div
-          style={{
-            marginTop: "1.5rem",
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "1rem",
-          }}
-        >
-          <button
-            style={{
-              background: "#10b981",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              padding: "0.7rem 1.5rem",
-              cursor: "pointer",
-            }}
-            onClick={onEdit}
-          >
-            Edit Employee
-          </button>
-          <button
-            style={{
-              background: "#6b7280",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              padding: "0.7rem 1.5rem",
-              cursor: "pointer",
-            }}
-            onClick={onClose}
-          >
-            Close
-          </button>
+        <div>
+          <p>
+            <strong>Department:</strong> {employee.department}
+          </p>
+          <p>
+            <strong>Position:</strong> {employee.position}
+          </p>
+          <p>
+            <strong>Salary:</strong> ₱{employee.salary?.toLocaleString()}
+          </p>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

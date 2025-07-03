@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./SalaryCard.css";
+import "../styles.css";
 
 export default function SalaryCard({
   period,
@@ -14,118 +14,149 @@ export default function SalaryCard({
       className={`salary-card ${expanded ? "expanded" : ""}`}
       onClick={onClick}
     >
-      <div className="salary-period">
-        <span>From: {period.from}</span>
-        <span>To: {period.to}</span>
+      <div className="salary-card-header">
+        <div className="salary-period">
+          <span className="period-label">From:</span>
+          <span className="period-date">{period.from}</span>
+        </div>
+        <div className="salary-period">
+          <span className="period-label">To:</span>
+          <span className="period-date">{period.to}</span>
+        </div>
+        <div className="expand-indicator">{expanded ? "▼" : "▶"}</div>
       </div>
       {expanded && (
         <div className="salary-details">
-          {hours.regularHours && (
-            <div className="hours-row">
-              <span>Regular Hours:</span>
-              <span>{hours.regularHours}</span>
-            </div>
-          )}
-          {hours.overtimeHours && (
-            <div className="hours-row">
-              <span>Overtime Hours:</span>
-              <span>{hours.overtimeHours}</span>
-            </div>
-          )}
-          {hours.holidayHours && (
-            <div className="hours-row">
-              <span>Holiday Hours:</span>
-              <span>{hours.holidayHours}</span>
-            </div>
-          )}
-          {hours.nightDiffHours && (
-            <div className="hours-row">
-              <span>Night Differential Hours:</span>
-              <span>{hours.nightDiffHours}</span>
-            </div>
-          )}
+          <div className="hours-section">
+            <h4 className="section-title">Hours Worked</h4>
+            {hours.regularHours && (
+              <div className="hours-row">
+                <span className="hours-label">Regular Hours:</span>
+                <span className="hours-value">{hours.regularHours}</span>
+              </div>
+            )}
+            {hours.overtimeHours && (
+              <div className="hours-row">
+                <span className="hours-label">Overtime Hours:</span>
+                <span className="hours-value">{hours.overtimeHours}</span>
+              </div>
+            )}
+            {hours.holidayHours && (
+              <div className="hours-row">
+                <span className="hours-label">Holiday Hours:</span>
+                <span className="hours-value">{hours.holidayHours}</span>
+              </div>
+            )}
+            {hours.nightDiffHours && (
+              <div className="hours-row">
+                <span className="hours-label">Night Differential Hours:</span>
+                <span className="hours-value">{hours.nightDiffHours}</span>
+              </div>
+            )}
+          </div>
 
           {calculation && (
-            <div
-              className="salary-breakdown"
-              style={{ marginTop: "1rem", fontSize: "0.95em" }}
-            >
-              <div>
-                <strong>Monthly Rate:</strong> ₱
-                {monthlyRate?.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                })}
+            <div className="salary-breakdown">
+              <div className="rates-section">
+                <h4 className="section-title">Rates</h4>
+                <div className="rate-row">
+                  <span className="rate-label">Monthly Rate:</span>
+                  <span className="rate-value">
+                    ₱
+                    {monthlyRate?.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+                <div className="rate-row">
+                  <span className="rate-label">Rate per Day:</span>
+                  <span className="rate-value">
+                    ₱{(calculation.ratePerDay || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="rate-row">
+                  <span className="rate-label">Rate per Hour:</span>
+                  <span className="rate-value">
+                    ₱{(calculation.ratePerHour || 0).toFixed(2)}
+                  </span>
+                </div>
               </div>
-              <div>
-                <strong>Rate per Day:</strong> ₱
-                {(calculation.ratePerDay || 0).toFixed(2)}
+
+              <div className="earnings-section">
+                <h4 className="section-title earnings-title">Earnings</h4>
+                <div className="earning-row">
+                  <span className="earning-label">Regular Pay:</span>
+                  <span className="earning-value">
+                    ₱{(calculation.regularPay || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="earning-row">
+                  <span className="earning-label">Overtime Pay:</span>
+                  <span className="earning-value">
+                    ₱{(calculation.overtimePay || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="earning-row">
+                  <span className="earning-label">Holiday Pay:</span>
+                  <span className="earning-value">
+                    ₱{(calculation.holidayPay || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="earning-row">
+                  <span className="earning-label">Night Diff:</span>
+                  <span className="earning-value">
+                    ₱{(calculation.nightDiffPay || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="total-row gross-pay">
+                  <span className="total-label">Gross Pay:</span>
+                  <span className="total-value">
+                    ₱{(calculation.grossPay || 0).toFixed(2)}
+                  </span>
+                </div>
               </div>
-              <div>
-                <strong>Rate per Hour:</strong> ₱
-                {(calculation.ratePerHour || 0).toFixed(2)}
+
+              <div className="deductions-section">
+                <h4 className="section-title deductions-title">Deductions</h4>
+                <div className="deduction-row">
+                  <span className="deduction-label">SSS:</span>
+                  <span className="deduction-value">
+                    ₱{(calculation.sssContribution || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="deduction-row">
+                  <span className="deduction-label">PhilHealth:</span>
+                  <span className="deduction-value">
+                    ₱{(calculation.philHealthContribution || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="deduction-row">
+                  <span className="deduction-label">Pag-IBIG:</span>
+                  <span className="deduction-value">
+                    ₱{(calculation.pagIbigContribution || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="deduction-row">
+                  <span className="deduction-label">Withholding Tax:</span>
+                  <span className="deduction-value">
+                    ₱{(calculation.withholdingTax || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="total-row total-deductions">
+                  <span className="total-label">Total Deductions:</span>
+                  <span className="total-value">
+                    ₱{(calculation.totalDeductions || 0).toFixed(2)}
+                  </span>
+                </div>
               </div>
-              <div style={{ margin: "0.5rem 0 0.25rem 0", color: "#059669" }}>
-                <strong>Earnings</strong>
-              </div>
-              <div>
-                Regular Pay: ₱{(calculation.regularPay || 0).toFixed(2)}
-              </div>
-              <div>
-                Overtime Pay: ₱{(calculation.overtimePay || 0).toFixed(2)}
-              </div>
-              <div>
-                Holiday Pay: ₱{(calculation.holidayPay || 0).toFixed(2)}
-              </div>
-              <div>
-                Night Diff: ₱{(calculation.nightDiffPay || 0).toFixed(2)}
-              </div>
-              <div
-                style={{
-                  fontWeight: "bold",
-                  borderTop: "1px solid #ddd",
-                  paddingTop: "0.5rem",
-                  marginTop: "0.5rem",
-                }}
-              >
-                Gross Pay: ₱{(calculation.grossPay || 0).toFixed(2)}
-              </div>
-              <div style={{ margin: "0.5rem 0 0.25rem 0", color: "#dc2626" }}>
-                <strong>Deductions</strong>
-              </div>
-              <div>SSS: ₱{(calculation.sssContribution || 0).toFixed(2)}</div>
-              <div>
-                PhilHealth: ₱
-                {(calculation.philHealthContribution || 0).toFixed(2)}
-              </div>
-              <div>
-                Pag-IBIG: ₱{(calculation.pagIbigContribution || 0).toFixed(2)}
-              </div>
-              <div>
-                Withholding Tax: ₱{(calculation.withholdingTax || 0).toFixed(2)}
-              </div>
-              <div
-                style={{
-                  fontWeight: "bold",
-                  borderTop: "1px solid #ddd",
-                  paddingTop: "0.5rem",
-                  marginTop: "0.5rem",
-                }}
-              >
-                Total Deductions: ₱
-                {(calculation.totalDeductions || 0).toFixed(2)}
-              </div>
-              <div
-                style={{
-                  padding: "0.5rem",
-                  background: "#2563eb",
-                  color: "white",
-                  borderRadius: "6px",
-                  textAlign: "center",
-                  fontWeight: "bold",
-                  marginTop: "0.5rem",
-                }}
-              >
-                Net Pay: ₱{(calculation.netPay || 0).toFixed(2)}
+
+              <div className="net-pay-section">
+                <div className="net-pay-row">
+                  <span className="net-pay-label">Net Pay:</span>
+                  <span className="net-pay-value">
+                    ₱{(calculation.netPay || 0).toFixed(2)}
+                  </span>
+                </div>
               </div>
             </div>
           )}

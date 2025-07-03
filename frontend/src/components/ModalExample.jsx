@@ -1,10 +1,20 @@
-import React from 'react';
-import Modal from './Modal';
-import { useModal } from './useModal';
+import React from "react";
+import Modal from "./Modal";
+import { useModal } from "./useModal";
+import Button from "./Button"; // Import the Button component
 
 // Example usage component - can be used as reference
 const ModalExample = () => {
-  const { isOpen, modalConfig, hideModal, showSuccess, showError, showWarning, showInfo, showConfirm } = useModal();
+  const {
+    isOpen,
+    modalConfig,
+    hideModal,
+    showSuccess,
+    showError,
+    showWarning,
+    showInfo,
+    showConfirm,
+  } = useModal();
 
   const handleSuccessExample = () => {
     showSuccess("Operation completed successfully!");
@@ -38,20 +48,34 @@ const ModalExample = () => {
   };
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
+    <div style={{ padding: "2rem", maxWidth: "600px", margin: "0 auto" }}>
       <h2>Modal Examples</h2>
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
-        <button onClick={handleSuccessExample}>Show Success</button>
-        <button onClick={handleErrorExample}>Show Error</button>
-        <button onClick={handleWarningExample}>Show Warning</button>
-        <button onClick={handleInfoExample}>Show Info</button>
-        <button onClick={handleConfirmExample}>Show Confirm</button>
+      <div
+        style={{
+          display: "flex",
+          gap: "1rem",
+          flexWrap: "wrap",
+          marginBottom: "2rem",
+        }}
+      >
+        <Button onClick={handleSuccessExample} label="Show Success" />
+        <Button onClick={handleErrorExample} label="Show Error" />
+        <Button onClick={handleWarningExample} label="Show Warning" />
+        <Button onClick={handleInfoExample} label="Show Info" />
+        <Button onClick={handleConfirmExample} label="Show Confirm" />
       </div>
 
       <div>
         <h3>Usage Instructions:</h3>
-        <pre style={{ background: '#f5f5f5', padding: '1rem', borderRadius: '4px', fontSize: '0.9rem' }}>
-{`// 1. Import the components
+        <pre
+          style={{
+            background: "#f5f5f5",
+            padding: "1rem",
+            borderRadius: "4px",
+            fontSize: "0.9rem",
+          }}
+        >
+          {`// 1. Import the components
 import Modal from '../components/Modal';
 import { useModal } from '../components/useModal';
 
@@ -81,11 +105,7 @@ showConfirm("Are you sure?", "Confirm", () => {
         </pre>
       </div>
 
-      <Modal
-        isOpen={isOpen}
-        onClose={hideModal}
-        {...modalConfig}
-      />
+      <Modal isOpen={isOpen} onClose={hideModal} {...modalConfig} />
     </div>
   );
 };

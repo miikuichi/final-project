@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { HRNavBar } from "../components/NavBar";
 import TicketCard from "../components/TicketCard";
 import TicketModal from "../components/TicketModal";
-import "./TrackTickets.css";
+import Button from "../components/Button";
+import "../styles.css";
 
 export default function TrackTickets() {
   const navigate = useNavigate();
@@ -91,15 +92,14 @@ export default function TrackTickets() {
         ) : myTickets.length === 0 ? (
           <div className="empty-state">
             <p>You haven't submitted any tickets yet.</p>
-            <button
+            <Button
               onClick={() => navigate("/issue-ticket")}
               className="btn-primary"
               style={{
                 margin: "auto",
               }}
-            >
-              Create Your First Ticket
-            </button>
+              label="Create Your First Ticket"
+            />
           </div>
         ) : (
           <div className="tickets-list">

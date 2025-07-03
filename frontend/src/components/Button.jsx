@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Button.css";
+import "../styles.css";
 
 /**
  * Reusable Button component
@@ -10,6 +10,7 @@ import "./Button.css";
  * @param {string} type - Button type (button, submit, etc.)
  * @param {object} style - Inline style (optional)
  * @param {string} className - Additional className (optional)
+ * @param {object} rest - Other native button props
  */
 export default function Button({
   label,
@@ -17,22 +18,29 @@ export default function Button({
   onClick,
   type = "button",
   style,
-  className,
+  className = "",
+  ...rest
 }) {
   const navigate = useNavigate();
-  const handleClick = (e) => {
-    if (onClick) {
-      onClick(e);
-    } else if (to) {
-      navigate(to);
-    }
-  };
+
+  const handleClick = useCallback(
+    (e) => {
+      if (onClick) {
+        onClick(e);
+      } else if (to) {
+        navigate(to);
+      }
+    },
+    [onClick, to, navigate]
+  );
+
   return (
     <button
       type={type}
       className={`custom-btn${className ? " " + className : ""}`}
       style={style}
       onClick={handleClick}
+      {...rest}
     >
       {label}
     </button>

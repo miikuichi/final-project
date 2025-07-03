@@ -1,6 +1,7 @@
 import React from "react";
+import Modal from "./Modal";
 import Button from "./Button";
-import "./TicketModal.css";
+import "../styles.css";
 
 export default function TicketModal({
   ticket,
@@ -10,13 +11,7 @@ export default function TicketModal({
   onUpdateStatus,
   role,
 }) {
-  if (!isOpen || !ticket) return null;
-
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
+  if (!ticket) return null;
 
   const handleStatusUpdate = async (status) => {
     const success = await onUpdateStatus(ticket.id, status);
@@ -34,67 +29,130 @@ export default function TicketModal({
     }
   };
 
-  return (
-    <div className="ticket-modal-overlay" onClick={handleOverlayClick}>
-      <div className="ticket-modal">
-        <button className="close-button" onClick={onClose}>
-          ×
-        </button>
+  const getStatusStyle = () => {
+    switch (ticket.status?.toLowerCase()) {
+      case "under process":
+        return {
+          backgroundColor: "var(--warning-color)",
+          color: "var(--surface-color)",
+          border: "2px solid var(--warning-color)",
+        };
+      case "high priority":
+        return {
+          backgroundColor: "var(--danger-color)",
+          color: "var(--surface-color)",
+          border: "2px solid var(--danger-color)",
+        };
+      case "issue fixed":
+        return {
+          backgroundColor: "var(--success-color)",
+          color: "var(--surface-color)",
+          border: "2px solid var(--success-color)",
+        };
+      default:
+        return {
+          backgroundColor: "var(--text-secondary)",
+          color: "var(--surface-color)",
+          border: "2px solid var(--text-secondary)",
+        };
+    }
+  };
 
-        <div className="modal-header">
-          <h2>{ticket.category}</h2>
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      showDefaultActions={false}
+      title={
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+          }}
+        >
+          <span>{ticket.category}</span>
           <span
-            className={`status-badge ${ticket.status
-              ?.toLowerCase()
-              .replace(" ", "-")}`}
+            style={{
+              ...getStatusStyle(),
+              borderRadius: "0.5rem",
+              padding: "0.3rem 0.8rem",
+              fontSize: "0.85rem",
+              fontWeight: 500,
+            }}
           >
             {ticket.status}
           </span>
         </div>
-
-        <div className="modal-content">
-          <div className="ticket-info">
-            <p>
-              <strong>Submitted by:</strong> {ticket.name}
-            </p>
-            <p>
-              <strong>Details:</strong>
-            </p>
-            <div className="ticket-details">{ticket.details}</div>
+      }
+      actions={
+        role === "admin" ? (
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            <Button
+              label="High Priority"
+              onClick={() => handleStatusUpdate("high priority")}
+              style={{
+                backgroundColor: "var(--danger-color)",
+                color: "var(--surface-color)",
+                border: "2px solid var(--danger-color)",
+              }}
+            />
+            <Button
+              label="Issue Fixed"
+              onClick={() => handleStatusUpdate("issue fixed")}
+              style={{
+                backgroundColor: "var(--success-color)",
+                color: "var(--surface-color)",
+                border: "2px solid var(--success-color)",
+              }}
+            />
+            <Button
+              label="Delete"
+              onClick={handleDelete}
+              style={{
+                backgroundColor: "var(--text-secondary)",
+                color: "var(--surface-color)",
+                border: "2px solid var(--text-secondary)",
+              }}
+            />
           </div>
-
-          {role === "admin" && (
-            <div className="modal-actions">
-              <Button
-                label="High Priority"
-                onClick={() => handleStatusUpdate("high priority")}
-                style={{
-                  backgroundColor: "#ef4444",
-                  color: "white",
-                  marginRight: "0.5rem",
-                }}
-              />
-              <Button
-                label="Issue Fixed"
-                onClick={() => handleStatusUpdate("issue fixed")}
-                style={{
-                  backgroundColor: "#10b981",
-                  color: "white",
-                  marginRight: "0.5rem",
-                }}
-              />
-              <Button
-                label="Delete"
-                onClick={handleDelete}
-                style={{
-                  backgroundColor: "#6b7280",
-                  color: "white",
-                }}
-              />
-            </div>
-          )}
+        ) : null
+      }
+    >
+      <div
+        className="ticket-modal-content"
+        style={{
+          padding: "1rem",
+          minHeight: "150px",
+          backgroundColor: "var(--surface-color)",
+          borderRadius: "var(--radius-md)",
+        }}
+      >
+        <div className="ticket-info">
+          <p style={{ color: "var(--text-primary)", marginBottom: "1rem" }}>
+            <strong>Submitted by:</strong> {ticket.name || "N/A"}
+          </p>
+          <p style={{ color: "var(--text-primary)", marginBottom: "0.5rem" }}>
+            <strong>Details:</strong>
+          </p>
+          <div
+            className="ticket-details"
+            style={{
+              marginTop: "0.5rem",
+              lineHeight: "1.6",
+              color: "var(--text-primary)",
+              backgroundColor: "var(--background-color)",
+              border: "2px solid var(--border-color)",
+              borderRadius: "var(--radius-md)",
+              padding: "1rem",
+              minHeight: "60px",
+            }}
+          >
+            {ticket.details || "No details provided"}
+          </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

@@ -1,7 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminNavBar } from "../components/NavBar";
-import "./Dashboard.css";
+import Button from "../components/Button";
+import "../styles.css";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -25,18 +26,22 @@ export default function AdminDashboard() {
       <div className="dashboard-container">
         <h2>Admin Dashboard</h2>
         <div className="dashboard-buttons">
-          <button onClick={() => navigate("/add-employee")}>
-            Add Employee
-          </button>
-          <button onClick={() => navigate("/manage-employee")}>
-            Edit Employee Details
-          </button>
-          <button onClick={() => navigate("/manage-tickets")}>
-            Manage Tickets
-          </button>
-          <button onClick={() => navigate("/modify-requests")}>
-            Modify Requests
-          </button>
+          <Button
+            onClick={() => navigate("/add-employee")}
+            label="Add Employee"
+          />
+          <Button
+            onClick={() => navigate("/manage-employee")}
+            label="Edit Employee Details"
+          />
+          <Button
+            onClick={() => navigate("/manage-tickets")}
+            label="Manage Tickets"
+          />
+          <Button
+            onClick={() => navigate("/modify-requests")}
+            label="Modify Requests"
+          />
         </div>
       </div>
     </div>

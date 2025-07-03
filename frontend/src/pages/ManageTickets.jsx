@@ -5,7 +5,9 @@ import { useTickets } from "../components/TicketContext";
 import { useRole } from "../components/RoleContext";
 import TicketCard from "../components/TicketCard";
 import TicketModal from "../components/TicketModal";
-import "./ManageTickets.css";
+import ContentContainer from "../components/ContentContainer";
+import Button from "../components/Button";
+import "../styles.css";
 
 export default function ManageTickets() {
   const navigate = useNavigate();
@@ -73,70 +75,24 @@ export default function ManageTickets() {
   return (
     <div>
       {role === "admin" ? <AdminNavBar /> : <HRNavBar />}
-      <div
-        className="manage-tickets-container"
-        style={{
-          background: "#fff",
-          borderRadius: "1.5rem",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
-          minWidth: "50vw",
-          minHeight: "80vh",
-          margin: "4.5rem auto 0 auto",
-          marginTop: "6rem",
-          padding: "2.5rem 2rem",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
+
+      <ContentContainer
+        title="Manage Tickets"
+        error={error}
+        onClearError={() => setError("")}
+        isLoading={isLoading}
+        loadingText="Loading tickets..."
+        emptyText="No tickets found."
       >
-        <h2>Manage Tickets</h2>
-        {error && (
-          <div
-            style={{
-              color: "#e11d48",
-              backgroundColor: "#ffe4e6",
-              padding: "0.75rem",
-              borderRadius: "0.5rem",
-              marginBottom: "1rem",
-              width: "100%",
-              textAlign: "center",
-            }}
-          >
-            {error}
-            <button
-              onClick={() => setError("")}
-              style={{
-                marginLeft: "1rem",
-                background: "none",
-                border: "none",
-                color: "#e11d48",
-                cursor: "pointer",
-              }}
-            >
-              ×
-            </button>
-          </div>
-        )}
-        {isLoading ? (
-          <div style={{ textAlign: "center", padding: "2rem" }}>
-            Loading tickets...
-          </div>
-        ) : tickets.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "2rem" }}>
-            No tickets found.
-          </div>
-        ) : (
-          <div style={{ width: "100%", marginTop: "1rem" }}>
-            {tickets.map((ticket) => (
-              <TicketCard
-                key={ticket.id}
-                ticket={ticket}
-                onClick={handleCardClick}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+        {tickets.length > 0 &&
+          tickets.map((ticket) => (
+            <TicketCard
+              key={ticket.id}
+              ticket={ticket}
+              onClick={handleCardClick}
+            />
+          ))}
+      </ContentContainer>
 
       <TicketModal
         ticket={selectedTicket}
